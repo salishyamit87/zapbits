@@ -75,56 +75,63 @@
             setTimeout(() => alertDiv.innerHTML = '', 5000);
         }
 
-        // Signup form handler - REAL API INTEGRATION
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submitBtn');
-            
-            try {
-                submitBtn.textContent = 'Creating Account...';
-                submitBtn.disabled = true;
+       // Signup form handler - DIRECT API CALLS
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    try {
+        submitBtn.textContent = 'Creating Account...';
+        submitBtn.disabled = true;
 
-                // Create user via Netlify function
-                const response = await fetch(`${NETLIFY_FUNCTIONS_URL}/create-user`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Store user info locally
-                    const localUserData = {
-                        id: result.user.id,
-                        email: email,
-                        name: result.user.name,
-                        createdAt: new Date().toISOString(),
-                        headscaleUser: result.user
-                    };
-                    
-                    localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
-                    
-                    showAlert('✅ Account created successfully in Headscale! Redirecting...', 'success');
-                    setTimeout(() => window.location.href = 'dashboard.html', 2000);
-                } else {
-                    throw new Error(result.message);
-                }
-                
-            } catch (error) {
-                console.error('Signup error:', error);
-                showAlert('❌ Signup failed: ' + error.message, 'error');
-                submitBtn.textContent = 'Create Account';
-                submitBtn.disabled = false;
-            }
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Create user in Headscale DIRECTLY
+        const response = await fetch(`${HEADSCALE_API}/user`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: username,
+                email: email
+            })
         });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            
+            // Store user info locally
+            const localUserData = {
+                id: userData.id,
+                email: email,
+                name: userData.name,
+                createdAt: new Date().toISOString(),
+                headscaleUser: userData
+            };
+            
+            localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
+            
+            showAlert('✅ Account created successfully in Headscale! Redirecting...', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        } else {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+        
+    } catch (error) {
+        console.error('Signup error:', error);
+        showAlert('❌ Signup failed: ' + error.message, 'error');
+        submitBtn.textContent = 'Create Account';
+        submitBtn.disabled = false;
+    }
+});
 
         function signInWithGoogle() {
             showAlert('Google Sign Up - Coming Soon', 'error');
