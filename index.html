@@ -3,93 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZapBits - Secure Mesh Networking</title>
+    <title>Headscale - Secure Networking Made Simple</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; }
         
         /* Header */
-        .header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; max-width: 1200px; margin: 0 auto; }
-        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; }
+        .navbar { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 0; position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #3b82f6; }
         .nav-links { display: flex; gap: 2rem; }
-        .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
-        .nav-links a:hover { color: #0066ff; }
-        
+        .nav-links a { text-decoration: none; color: #374151; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #3b82f6; }
+        .auth-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.5rem 1.5rem; border-radius: 0.375rem; font-weight: 500; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
+        .btn-outline { border: 2px solid #3b82f6; color: #3b82f6; background: transparent; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
         /* Hero Section */
-        .hero { background: linear-gradient(135deg, #0066ff, #00ccff); color: white; padding: 120px 5% 80px; text-align: center; }
-        .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
-        .hero p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; }
-        .cta-button { background: white; color: #0066ff; padding: 12px 30px; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
-        
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8rem 0 4rem; text-align: center; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; font-weight: 700; }
+        .hero p { font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; }
+
         /* Features */
-        .features { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
-        .feature-card { background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center; }
-        .feature-card h3 { color: #0066ff; margin-bottom: 1rem; }
-        
+        .features { padding: 4rem 0; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 3rem; color: #1f2937; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .feature-card { background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; color: #3b82f6; }
+        .feature-card h3 { font-size: 1.25rem; margin-bottom: 1rem; color: #1f2937; }
+
         /* Footer */
-        .footer { background: #333; color: white; text-align: center; padding: 2rem; margin-top: 4rem; }
+        .footer { background: #1f2937; color: white; padding: 3rem 0; text-align: center; }
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+        .footer-links a { color: #d1d5db; text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: white; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container { flex-direction: column; gap: 1rem; }
+            .nav-links { gap: 1rem; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero { padding: 6rem 0 3rem; }
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <nav class="nav">
-            <div class="logo">ZapBits</div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Headscale</div>
             <div class="nav-links">
                 <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="login.html">Login</a>
-                <a href="signup.html" class="cta-button">Sign Up Free</a>
+                <a href="contact.html">Contact</a>
+                <a href="terms.html">Terms</a>
             </div>
-        </nav>
-    </header>
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-outline">Login</a>
+                <a href="login.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Secure Mesh Networking Made Simple</h1>
-        <p>Connect your devices securely with zero-config VPN. Built on Headscale for ultimate control.</p>
-        <a href="signup.html" class="cta-button">Get Started for Free</a>
+        <div class="container">
+            <h1>Secure Networking Made Simple</h1>
+            <p>Connect your devices securely with zero-config VPN. Private, secure, and easy to use.</p>
+            <a href="login.html" class="btn btn-primary" style="background: white; color: #667eea;">Get Started Free</a>
+        </div>
     </section>
 
-    <!-- Features -->
+    <!-- Features Section -->
     <section class="features" id="features">
-        <h2 style="text-align: center; margin-bottom: 1rem;">Why Choose ZapBits?</h2>
-        <p style="text-align: center; margin-bottom: 3rem;">Enterprise-grade security with simplicity</p>
-        
-        <div class="features-grid">
-            <div class="feature-card">
-                <h3>🔒 Zero-Trust Security</h3>
-                <p>Every connection is authenticated and encrypted end-to-end</p>
-            </div>
-            <div class="feature-card">
-                <h3>🌐 Global Mesh Network</h3>
-                <p>Connect devices across any network seamlessly</p>
-            </div>
-            <div class="feature-card">
-                <h3>⚡ Lightning Fast</h3>
-                <p>Direct peer-to-peer connections for maximum speed</p>
-            </div>
-            <div class="feature-card">
-                <h3>🎯 Easy Management</h3>
-                <p>Simple dashboard to manage all your devices</p>
-            </div>
-            <div class="feature-card">
-                <h3>🔧 Self-Hosted Option</h3>
-                <p>Full control with your own Headscale server</p>
-            </div>
-            <div class="feature-card">
-                <h3>💸 Completely Free</h3>
-                <p>No hidden costs, no limitations</p>
+        <div class="container">
+            <h2 class="section-title">Why Choose Headscale?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Zero-Trust Security</h3>
+                    <p>End-to-end encryption with automatic key rotation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Direct peer-to-peer connections when possible</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Global Network</h3>
+                    <p>Connect devices across different networks seamlessly</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Easy Management</h3>
+                    <p>Simple web interface to manage all your devices</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Open Source</h3>
+                    <p>Free and open-source alternative to Tailscale</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Self-Hosted</h3>
+                    <p>Complete control over your data and infrastructure</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024 ZapBits.com. All rights reserved.</p>
-        <p><a href="terms.html" style="color: #00ccff;">Terms & Conditions</a> | <a href="contact.html" style="color: #00ccff;">Contact Us</a></p>
+        <div class="container">
+            <div class="footer-links">
+                <a href="contact.html">Contact Us</a>
+                <a href="terms.html">Terms & Conditions</a>
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+            <p>&copy; 2024 Headscale. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 </html>
