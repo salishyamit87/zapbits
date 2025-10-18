@@ -366,6 +366,84 @@ function simulateOAuthSuccess(provider) {
     });
 }
 </script>
+
+    <!-- Debug Section - Remove in production -->
+<div style="max-width: 400px; margin: 1rem auto; padding: 0 1rem;">
+    <details style="background: #f3f4f6; padding: 1rem; border-radius: 0.375rem; font-size: 0.875rem;">
+        <summary style="cursor: pointer; font-weight: 600;">Debug Information</summary>
+        <div style="margin-top: 1rem;">
+            <div><strong>Test Credentials:</strong></div>
+            <div style="font-family: monospace; margin-top: 0.5rem;">
+                Email: salishyam4ever@gmail.com<br>
+                Password: any
+            </div>
+            <div style="margin-top: 1rem;">
+                <button onclick="testExistingUser()" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">
+                    Test Existing User Login
+                </button>
+            </div>
+            <div id="debugResults" style="margin-top: 1rem; font-family: monospace; font-size: 0.75rem;"></div>
+        </div>
+    </details>
+</div>
+
+<script>
+// Debug functions
+function updateDebug(message) {
+    const debugDiv = document.getElementById('debugResults');
+    if (debugDiv) {
+        debugDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+    console.log(message);
+}
+
+async function testExistingUser() {
+    const testEmail = 'salishyam4ever@gmail.com';
+    updateDebug(`Testing login for: ${testEmail}`);
+    
+    try {
+        const response = await fetch('/api/proxy?path=user');
+        updateDebug(`API status: ${response.status}`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            updateDebug(`Users in system: ${data.users ? data.users.length : 0}`);
+            
+            const userExists = data.users && data.users.some(user => user.name === testEmail);
+            updateDebug(`User exists: ${userExists}`);
+            
+            if (userExists) {
+                updateDebug('✅ User found! You should be able to login.');
+            } else {
+                updateDebug('❌ User not found. Please sign up first.');
+            }
+        } else {
+            updateDebug('❌ API connection failed');
+        }
+    } catch (error) {
+        updateDebug(`💥 Error: ${error.message}`);
+    }
+}
+
+// Test API connection on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    updateDebug('Page loaded - testing API connection...');
+    
+    try {
+        const response = await fetch('/api/proxy?path=user');
+        updateDebug(`API test: ${response.status} ${response.statusText}`);
+        
+        if (response.ok) {
+            updateDebug('✅ API connected successfully');
+        } else {
+            updateDebug('❌ API connection failed');
+        }
+    } catch (error) {
+        updateDebug(`💥 API test error: ${error.message}`);
+    }
+});
+</script>
     
 </body>
 </html>
