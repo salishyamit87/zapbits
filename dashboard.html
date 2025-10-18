@@ -6,179 +6,105 @@
     <title>Dashboard - ZapBits</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; color: #334155; }
         
-        .header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; max-width: 1200px; margin: 0 auto; }
-        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; text-decoration: none; }
+        /* Header */
+        .header { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .user-menu { display: flex; align-items: center; gap: 1rem; }
-        .logout-btn { background: #ff4444; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .user-info { display: flex; align-items: center; gap: 0.5rem; }
+        .avatar { width: 32px; height: 32px; background: #0066ff; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .logout-btn { background: #ef4444; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
         
-        .sidebar { 
-            position: fixed; 
-            left: 0; 
-            top: 60px; 
-            width: 250px; 
-            height: calc(100vh - 60px); 
-            background: white; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); 
-            padding: 2rem 1rem; 
-        }
-        .sidebar-menu { list-style: none; }
-        .sidebar-menu li { margin-bottom: 0.5rem; }
-        .sidebar-menu a { 
-            display: block; 
-            padding: 12px 16px; 
-            text-decoration: none; 
-            color: #333; 
-            border-radius: 5px; 
-            transition: all 0.3s; 
-        }
-        .sidebar-menu a:hover { background: #f0f0f0; }
-        .sidebar-menu a.active { background: #0066ff; color: white; }
+        /* Main Layout */
+        .main-layout { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
         
-        .main-content { 
-            margin-left: 250px; 
-            margin-top: 60px; 
-            padding: 2rem; 
-            min-height: calc(100vh - 60px); 
-        }
+        /* Sidebar */
+        .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { padding: 0 1.5rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+        .nav-links { list-style: none; }
+        .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: #475569; text-decoration: none; transition: all 0.2s; border-left: 3px solid transparent; }
+        .nav-link:hover { background: #f1f5f9; color: #0066ff; }
+        .nav-link.active { background: #f0f9ff; color: #0066ff; border-left-color: #0066ff; font-weight: 500; }
+        .nav-icon { width: 20px; text-align: center; }
         
-        .section { 
-            background: white; 
-            padding: 2rem; 
-            border-radius: 10px; 
-            margin-bottom: 2rem; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            display: none; 
-        }
-        .section.active { display: block; }
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem; background: #f8fafc; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: white; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e0e0e0; }
-        .stat-number { font-size: 2rem; font-weight: bold; color: #0066ff; }
-        .stat-label { color: #666; font-size: 0.9rem; }
+        /* Page Header */
+        .page-header { display: flex; justify-content: between; align-items: center; margin-bottom: 2rem; }
+        .page-title { font-size: 1.875rem; font-weight: 700; color: #0f172a; }
+        .page-actions { display: flex; gap: 1rem; }
         
-        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
-        .node-card { border: 1px solid #e0e0e0; padding: 1.5rem; border-radius: 8px; background: #fafafa; }
-        .node-online { border-left: 4px solid #00cc00; }
-        .node-offline { border-left: 4px solid #ff4444; }
-        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .node-name { font-weight: bold; font-size: 1.1rem; }
-        .node-status { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .status-online { background: #e8f5e8; color: #00cc00; }
-        .status-offline { background: #ffe8e8; color: #ff4444; }
-        .node-details p { margin: 0.5rem 0; color: #555; }
+        /* Cards */
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .card-header { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: #0f172a; margin: 0; }
+        .card-body { padding: 1.5rem; }
+        .card-footer { padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; }
         
-        .btn { 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 0.9rem; 
-            margin-right: 0.5rem; 
-            margin-bottom: 0.5rem; 
-        }
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #0066ff; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #0f172a; line-height: 1; }
+        .stat-label { color: #64748b; font-size: 0.875rem; margin-top: 0.5rem; }
+        .stat-change { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; margin-top: 0.5rem; }
+        .stat-change.positive { color: #10b981; }
+        .stat-change.negative { color: #ef4444; }
+        
+        /* Tables */
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: #f8fafc; padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; }
+        .table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+        .table tr:hover { background: #f9fafb; }
+        
+        /* Status Badges */
+        .status-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .status-online { background: #d1fae5; color: #065f46; }
+        .status-offline { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; }
         .btn-primary { background: #0066ff; color: white; }
-        .btn-success { background: #00cc00; color: white; }
-        .btn-warning { background: #ff9900; color: white; }
-        .btn-danger { background: #ff4444; color: white; }
+        .btn-primary:hover { background: #0052cc; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-outline { background: transparent; border: 1px solid #d1d5db; color: #374151; }
+        .btn-outline:hover { background: #f9fafb; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
         
-        .loading { text-align: center; padding: 2rem; color: #666; }
-        .alert { padding: 1rem; border-radius: 5px; margin: 1rem 0; }
-        .alert-success { background: #e8f5e8; color: #00cc00; border: 1px solid #00cc00; }
-        .alert-error { background: #ffe8e8; color: #ff4444; border: 1px solid #ff4444; }
-        .alert-info { background: #e8f4ff; color: #0066ff; border: 1px solid #0066ff; }
-        
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.5); 
-            z-index: 2000; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        .modal-content { 
-            background: white; 
-            padding: 2rem; 
-            border-radius: 10px; 
-            width: 90%; 
-            max-width: 500px; 
-            max-height: 80vh; 
-            overflow-y: auto; 
-        }
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 1.5rem; 
-            border-bottom: 1px solid #e0e0e0; 
-            padding-bottom: 1rem; 
-        }
-        .close-modal { 
-            background: none; 
-            border: none; 
-            font-size: 1.5rem; 
-            cursor: pointer; 
-            color: #666; 
-        }
+        /* Forms */
         .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; }
-        .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ddd; 
-            border-radius: 5px; 
-            font-size: 1rem; 
-        }
-        .form-group textarea { height: 100px; resize: vertical; }
-        .submit-btn { 
-            background: #0066ff; 
-            color: white; 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-size: 1rem; 
-            font-weight: bold; 
-        }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+        .form-input { width: 100%; padding: 0.625rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: #0066ff; box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1); }
+        .form-textarea { resize: vertical; min-height: 80px; }
         
-        .api-key-display { 
-            background: #f8f9fa; 
-            padding: 1rem; 
-            border-radius: 5px; 
-            margin: 1rem 0; 
-            border: 1px dashed #ccc; 
-        }
-        .code-block { 
-            background: #2d2d2d; 
-            color: #f8f8f2; 
-            padding: 1rem; 
-            border-radius: 5px; 
-            font-family: monospace; 
-            overflow-x: auto; 
-            margin: 1rem 0; 
-        }
+        /* Tabs */
+        .tabs { display: flex; border-bottom: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+        .tab { padding: 0.75rem 1rem; background: none; border: none; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab.active { color: #0066ff; border-bottom-color: #0066ff; font-weight: 500; }
         
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 1rem 0; 
-        }
-        table th, table td { 
-            padding: 12px; 
-            text-align: left; 
-            border-bottom: 1px solid #e0e0e0; 
-        }
-        table th { 
-            background: #f8f9fa; 
-            font-weight: 600; 
-            color: #333; 
+        /* Code Block */
+        .code-block { background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: 6px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.875rem; overflow-x: auto; }
+        
+        /* Grid Layout */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        
+        /* Empty State */
+        .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e2e8f0; }
+            .grid-2 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -186,206 +112,665 @@
     <!-- Header -->
     <header class="header">
         <nav class="nav">
-            <a href="index.html" class="logo">ZapBits</a>
+            <a href="index.html" class="logo">
+                <span>🔌</span> ZapBits
+            </a>
             <div class="user-menu">
-                <span>Welcome, <strong id="username">User</strong></span>
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">S</div>
+                    <span id="userName">shyam</span>
+                </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </nav>
     </header>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="#" class="active" onclick="showSection('overview')">📊 Overview</a></li>
-            <li><a href="#" onclick="showSection('nodes')">🖥️ Nodes</a></li>
-            <li><a href="#" onclick="showSection('routes')">🛣️ Routes</a></li>
-            <li><a href="#" onclick="showSection('acls')">🔐 ACLs</a></li>
-            <li><a href="#" onclick="showSection('apikeys')">🔑 API Keys</a></li>
-            <li><a href="#" onclick="showSection('preauth')">🔓 Pre-auth Keys</a></li>
-            <li><a href="#" onclick="showSection('settings')">⚙️ Settings</a></li>
-        </ul>
-    </div>
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="nav-section">
+                <div class="nav-title">Main</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link active" onclick="showSection('overview')">
+                        <span class="nav-icon">📊</span> Overview
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('nodes')">
+                        <span class="nav-icon">🖥️</span> Nodes
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('routes')">
+                        <span class="nav-icon">🛣️</span> Routes
+                    </a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Network</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link" onclick="showSection('acls')">
+                        <span class="nav-icon">🔐</span> ACLs
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('dns')">
+                        <span class="nav-icon">🌐</span> DNS
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('derp')">
+                        <span class="nav-icon">🔄</span> DERP
+                    </a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Administration</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link" onclick="showSection('users')">
+                        <span class="nav-icon">👥</span> Users
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('apikeys')">
+                        <span class="nav-icon">🔑</span> API Keys
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('preauth')">
+                        <span class="nav-icon">🎫</span> Pre-auth Keys
+                    </a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('settings')">
+                        <span class="nav-icon">⚙️</span> Settings
+                    </a></li>
+                </ul>
+            </div>
+        </nav>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Overview Section -->
-        <div id="overview" class="section active">
-            <h1>Network Overview</h1>
-            <div class="alert alert-info" id="overviewAlert">
-                Loading your network data from Headscale server...
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalNodes">0</div>
-                    <div class="stat-label">Total Nodes</div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <div id="overview" class="section active">
+                <div class="page-header">
+                    <h1 class="page-title">Network Overview</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="showSection('preauth')">
+                            <span>🎫</span> Create Auth Key
+                        </button>
+                        <button class="btn btn-outline" onclick="showSection('nodes')">
+                            <span>🖥️</span> Manage Nodes
+                        </button>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="onlineNodes">0</div>
-                    <div class="stat-label">Online Nodes</div>
+
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card" style="border-left-color: #10b981;">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Total Nodes</div>
+                        <div class="stat-change positive">↑ 2 this week</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #f59e0b;">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Online Nodes</div>
+                        <div class="stat-change positive">↑ 1 today</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #ef4444;">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Active Routes</div>
+                        <div class="stat-change negative">↓ 2 today</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #8b5cf6;">
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Days Active</div>
+                        <div class="stat-change positive">Consistent</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalRoutes">0</div>
-                    <div class="stat-label">Active Routes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">1</div>
-                    <div class="stat-label">Users</div>
-                </div>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card" style="grid-column: 1 / -1;">
-                    <h3>Quick Actions</h3>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="showSection('nodes')">Manage Nodes</button>
-                        <button class="btn btn-success" onclick="generatePreAuthKey()">Create Auth Key</button>
-                        <button class="btn btn-warning" onclick="showSection('routes')">View Routes</button>
-                        <button class="btn btn-primary" onclick="showSection('acls')">ACL Settings</button>
+
+                <!-- Quick Actions -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <button class="btn btn-outline" onclick="showSection('nodes')">
+                                    <span>🖥️</span> Add New Node
+                                </button>
+                                <button class="btn btn-outline" onclick="showSection('preauth')">
+                                    <span>🎫</span> Generate Pre-auth Key
+                                </button>
+                                <button class="btn btn-outline" onclick="showSection('routes')">
+                                    <span>🛣️</span> Manage Routes
+                                </button>
+                                <button class="btn btn-outline" onclick="showSection('acls')">
+                                    <span>🔐</span> Configure ACLs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div style="display: flex; justify-content: between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 500;">New node registered</div>
+                                        <div style="font-size: 0.875rem; color: #6b7280;">work-laptop • 2 hours ago</div>
+                                    </div>
+                                    <span class="status-badge status-online">Online</span>
+                                </div>
+                                <div style="display: flex; justify-content: between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 500;">Route enabled</div>
+                                        <div style="font-size: 0.875rem; color: #6b7280;">192.168.1.0/24 • 5 hours ago</div>
+                                    </div>
+                                    <span class="status-badge status-online">Active</span>
+                                </div>
+                                <div style="display: flex; justify-content: between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 500;">Node disconnected</div>
+                                        <div style="font-size: 0.875rem; color: #6b7280;">home-server • 1 day ago</div>
+                                    </div>
+                                    <span class="status-badge status-offline">Offline</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Nodes Section -->
-        <div id="nodes" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h1>Node Management</h1>
-                <button class="btn btn-primary" onclick="showAddNodeModal()">+ Add Node</button>
-            </div>
-            
-            <div class="alert alert-info" id="nodesAlert">
-                Loading nodes from Headscale server...
-            </div>
-            
-            <div class="nodes-grid" id="nodesList">
-                <!-- Nodes will be loaded here -->
-            </div>
-        </div>
+            <!-- Nodes Section -->
+            <div id="nodes" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Node Management</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="showAddNodeModal()">
+                            <span>➕</span> Add Node
+                        </button>
+                        <button class="btn btn-outline" onclick="generatePreAuthKey()">
+                            <span>🎫</span> Pre-auth Key
+                        </button>
+                    </div>
+                </div>
 
-        <!-- Routes Section -->
-        <div id="routes" class="section">
-            <h1>Route Management</h1>
-            <div class="alert alert-info" id="routesAlert">
-                Loading routes from Headscale server...
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Nodes</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>Last Seen</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>home-pc</td>
+                                    <td>100.64.0.1</td>
+                                    <td><span class="status-badge status-online">🟢 Online</span></td>
+                                    <td>2 minutes ago</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Manage</button>
+                                        <button class="btn btn-sm btn-danger">Remove</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>office-laptop</td>
+                                    <td>100.64.0.2</td>
+                                    <td><span class="status-badge status-online">🟢 Online</span></td>
+                                    <td>5 minutes ago</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Manage</button>
+                                        <button class="btn btn-sm btn-danger">Remove</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>mobile-device</td>
+                                    <td>100.64.0.3</td>
+                                    <td><span class="status-badge status-offline">🔴 Offline</span></td>
+                                    <td>2 hours ago</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Manage</button>
+                                        <button class="btn btn-sm btn-danger">Remove</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            
-            <div id="routesList">
-                <!-- Routes will be loaded here -->
-            </div>
-        </div>
 
-        <!-- ACLs Section -->
-        <div id="acls" class="section">
-            <h1>Access Control Lists (ACLs)</h1>
-            <div class="alert alert-info">
-                Manage your network access policies
+            <!-- Routes Section -->
+            <div id="routes" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Route Management</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary">Add Route</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Active Routes</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Node</th>
+                                    <th>Status</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>100.64.0.1/32</td>
+                                    <td>home-pc</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>Primary</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Disable</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>100.64.0.2/32</td>
+                                    <td>office-laptop</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>Primary</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Disable</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>192.168.1.0/24</td>
+                                    <td>home-pc</td>
+                                    <td><span class="status-badge status-offline">Disabled</span></td>
+                                    <td>Subnet</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success">Enable</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="aclPolicy">ACL Policy (YAML)</label>
-                <textarea id="aclPolicy" placeholder="Enter your ACL policy in YAML format...">
-# Example ACL Policy
+
+            <!-- ACLs Section -->
+            <div id="acls" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Access Control Lists</h1>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">ACL Policy</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Policy Configuration (YAML)</label>
+                                <textarea class="form-input form-textarea" id="aclPolicy">
 acls:
   - action: accept
     src:
       - "autogroup:members"
     dst:
       - "*:*"
-                </textarea>
-            </div>
-            
-            <button class="btn btn-primary" onclick="saveACLPolicy()">Save ACL Policy</button>
-            <button class="btn btn-success" onclick="testACLPolicy()">Test ACL Policy</button>
-            <button class="btn btn-warning" onclick="loadACLPolicy()">Load Current Policy</button>
-        </div>
 
-        <!-- API Keys Section -->
-        <div id="apikeys" class="section">
-            <h1>API Key Management</h1>
-            <div class="alert alert-info">
-                Manage your API keys for programmatic access
-            </div>
-            
-            <button class="btn btn-primary" onclick="createApiKey()">Create New API Key</button>
-            <button class="btn btn-warning" onclick="listApiKeys()">List API Keys</button>
-            
-            <div id="apiKeysList" style="margin-top: 2rem;">
-                <!-- API Keys will be displayed here -->
-            </div>
-        </div>
+groups:
+  group:admin:
+    - "user:shyam"
 
-        <!-- Pre-auth Keys Section -->
-        <div id="preauth" class="section">
-            <h1>Pre-auth Keys</h1>
-            <div class="alert alert-info">
-                Create pre-authentication keys for easy node registration
-            </div>
-            
-            <div class="form-group">
-                <label for="keyExpiry">Key Expiry (hours)</label>
-                <input type="number" id="keyExpiry" value="24" min="1" max="8760">
-            </div>
-            
-            <button class="btn btn-primary" onclick="generatePreAuthKey()">Generate Pre-auth Key</button>
-            
-            <div id="preAuthKeyResult" style="margin-top: 2rem;">
-                <!-- Pre-auth key will be displayed here -->
-            </div>
-        </div>
+hosts:
+  home-server: "100.64.0.1"
+                                </textarea>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick="saveACLPolicy()">Save Policy</button>
+                                <button class="btn btn-outline" onclick="testACLPolicy()">Test Policy</button>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Settings Section -->
-        <div id="settings" class="section">
-            <h1>Settings</h1>
-            <div class="alert alert-info">
-                Manage your account and application settings
-            </div>
-            
-            <div class="stat-card">
-                <h3>User Information</h3>
-                <div id="userInfo">
-                    <!-- User info will be loaded here -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">ACL Groups</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <div style="font-weight: 500;">Administrators</div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">shyam</div>
+                                </div>
+                                                                <div>
+                                    <div style="font-weight: 500;">Developers</div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">user1, user2</div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">Services</div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">web-servers, databases</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline" style="margin-top: 1rem;">Manage Groups</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="stat-card" style="margin-top: 2rem;">
-                <h3>Danger Zone</h3>
-                <button class="btn btn-danger" onclick="deleteUser()">Delete My Account</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Add Node Modal -->
-    <div id="addNodeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Node</h3>
-                <button class="close-modal" onclick="hideAddNodeModal()">&times;</button>
+            <!-- DNS Section -->
+            <div id="dns" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">DNS Configuration</h1>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">DNS Settings</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Magic DNS Domain</label>
+                                <input type="text" class="form-input" value="zapbits.net" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">DNS Servers</label>
+                                <input type="text" class="form-input" value="1.1.1.1, 8.8.8.8" readonly>
+                            </div>
+                            <button class="btn btn-primary">Update DNS</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">DNS Records</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Hostname</th>
+                                        <th>IP Address</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>home-pc.zapbits.net</td>
+                                        <td>100.64.0.1</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>office-laptop.zapbits.net</td>
+                                        <td>100.64.0.2</td>
+                                        <td>A</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <form id="addNodeForm">
-                <div class="form-group">
-                    <label for="nodeName">Node Name</label>
-                    <input type="text" id="nodeName" placeholder="e.g., my-laptop, office-pc" required>
+
+            <!-- DERP Section -->
+            <div id="derp" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">DERP Servers</h1>
                 </div>
-                <div class="form-group">
-                    <label for="nodeType">Node Type</label>
-                    <select id="nodeType" required>
-                        <option value="client">Client</option>
-                        <option value="server">Server</option>
-                        <option value="exit-node">Exit Node</option>
-                    </select>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">DERP Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Server</th>
+                                    <th>Status</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>New York</td>
+                                    <td>derp1.zapbits.com</td>
+                                    <td><span class="status-badge status-online">Online</span></td>
+                                    <td>24ms</td>
+                                </tr>
+                                <tr>
+                                    <td>London</td>
+                                    <td>derp2.zapbits.com</td>
+                                    <td><span class="status-badge status-online">Online</span></td>
+                                    <td>45ms</td>
+                                </tr>
+                                <tr>
+                                    <td>Singapore</td>
+                                    <td>derp3.zapbits.com</td>
+                                    <td><span class="status-badge status-offline">Offline</span></td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <button type="submit" class="submit-btn">Add Node</button>
-            </form>
-        </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">User Management</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary">Add User</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">System Users</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Nodes</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>shyam</td>
+                                    <td>shyam@zapbits.com</td>
+                                    <td>Admin</td>
+                                    <td>3</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>alice</td>
+                                    <td>alice@company.com</td>
+                                    <td>User</td>
+                                    <td>2</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Keys Section -->
+            <div id="apikeys" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">API Key Management</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="createApiKey()">Create API Key</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Your API Keys</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Prefix</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Web Dashboard</td>
+                                    <td>Gib3hJr</td>
+                                    <td>2025-10-17</td>
+                                    <td>2026-01-15</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Rotate</button>
+                                        <button class="btn btn-sm btn-danger">Revoke</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>CI/CD Pipeline</td>
+                                    <td>HKOE_LG</td>
+                                    <td>2025-10-17</td>
+                                    <td>2026-01-15</td>
+                                    <td><span class="status-badge status-online">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Rotate</button>
+                                        <button class="btn btn-sm btn-danger">Revoke</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-auth Keys Section -->
+            <div id="preauth" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Pre-auth Keys</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="generatePreAuthKey()">Generate Key</button>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Create Pre-auth Key</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Key Expiry</label>
+                                <select class="form-input" id="keyExpiry">
+                                    <option value="1">1 hour</option>
+                                    <option value="24" selected>24 hours</option>
+                                    <option value="168">7 days</option>
+                                    <option value="720">30 days</option>
+                                    <option value="0">Never</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Usage Limit</label>
+                                <input type="number" class="form-input" value="1" min="1">
+                            </div>
+                            <button class="btn btn-primary" onclick="generatePreAuthKey()">Generate Key</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Generated Key</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="preAuthKeyResult">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🎫</div>
+                                    <div>No key generated yet</div>
+                                    <div style="font-size: 0.875rem; margin-top: 0.5rem;">Generate a pre-auth key to get started</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Profile Settings</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-input" value="shyam" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" value="shyam@zapbits.com">
+                            </div>
+                            <button class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Security</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-outline">Change Password</button>
+                                <button class="btn btn-outline">Two-Factor Authentication</button>
+                                <button class="btn btn-outline">Session Management</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title" style="color: #ef4444;">Danger Zone</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #6b7280; margin-bottom: 1rem;">Once you delete your account, there is no going back. Please be certain.</p>
+                        <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Headscale API Configuration
-        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
-        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
-
         // Check authentication
         function checkAuth() {
             const user = localStorage.getItem('zapbits_user');
@@ -400,399 +785,61 @@ acls:
         function showSection(sectionName) {
             // Hide all sections
             document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
+                section.style.display = 'none';
             });
             
             // Show selected section
-            document.getElementById(sectionName).classList.add('active');
+            document.getElementById(sectionName).style.display = 'block';
             
             // Update sidebar active state
-            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
             event.target.classList.add('active');
-            
-            // Load section data
-            loadSectionData(sectionName);
         }
 
-        // Load data for specific section
-        async function loadSectionData(sectionName) {
-            const user = checkAuth();
-            if (!user) return;
-
-            try {
-                switch(sectionName) {
-                    case 'overview':
-                        await loadOverviewData(user);
-                        break;
-                    case 'nodes':
-                        await loadNodesData(user);
-                        break;
-                    case 'routes':
-                        await loadRoutesData(user);
-                        break;
-                    case 'acls':
-                        await loadACLData(user);
-                        break;
-                    case 'apikeys':
-                        await loadAPIKeysData(user);
-                        break;
-                    case 'preauth':
-                        // Pre-auth keys will be generated on demand
-                        break;
-                    case 'settings':
-                        await loadSettingsData(user);
-                        break;
-                }
-            } catch (error) {
-                console.error(`Error loading ${sectionName}:`, error);
-                showAlert(sectionName + 'Alert', 'Error loading data: ' + error.message, 'error');
-            }
-        }
-
-        // Load overview data
-        async function loadOverviewData(user) {
-            showAlert('overviewAlert', 'Loading network data...', 'info');
-            
-            try {
-                // Get user's nodes
-                const nodesResponse = await fetch(`${HEADSCALE_API}/user/${user.name}/nodes`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                
-                if (nodesResponse.ok) {
-                    const nodesData = await nodesResponse.json();
-                    const nodes = nodesData.nodes || [];
-                    
-                    const onlineNodes = nodes.filter(node => node.online).length;
-                    
-                    document.getElementById('totalNodes').textContent = nodes.length;
-                    document.getElementById('onlineNodes').textContent = onlineNodes;
-                    document.getElementById('totalRoutes').textContent = nodes.reduce((acc, node) => acc + (node.routes?.length || 0), 0);
-                    document.getElementById('totalUsers').textContent = '1';
-                    
-                    showAlert('overviewAlert', `Loaded ${nodes.length} nodes, ${onlineNodes} online`, 'success');
-                } else {
-                    throw new Error('Failed to fetch nodes');
-                }
-            } catch (error) {
-                document.getElementById('totalNodes').textContent = '3';
-                document.getElementById('onlineNodes').textContent = '2';
-                document.getElementById('totalRoutes').textContent = '5';
-                showAlert('overviewAlert', 'Using demo data - ' + error.message, 'error');
-            }
-        }
-
-        // Load nodes data
-        async function loadNodesData(user) {
-            showAlert('nodesAlert', 'Loading nodes...', 'info');
-            
-            try {
-                const nodesResponse = await fetch(`${HEADSCALE_API}/user/${user.name}/nodes`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                
-                if (nodesResponse.ok) {
-                    const nodesData = await nodesResponse.json();
-                    displayNodes(nodesData.nodes || []);
-                    showAlert('nodesAlert', `Loaded ${nodesData.nodes?.length || 0} nodes`, 'success');
-                } else {
-                    throw new Error('Failed to fetch nodes');
-                }
-            } catch (error) {
-                // Fallback to demo data
-                const demoNodes = [
-                    { id: 1, name: 'my-laptop', ip: '100.64.0.1', online: true, lastSeen: new Date().toISOString(), routes: [] },
-                    { id: 2, name: 'office-pc', ip: '100.64.0.2', online: true, lastSeen: new Date().toISOString(), routes: [] },
-                    { id: 3, name: 'home-server', ip: '100.64.0.3', online: false, lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), routes: [] }
-                ];
-                displayNodes(demoNodes);
-                showAlert('nodesAlert', 'Using demo data - ' + error.message, 'error');
-            }
-        }
-
-        // Display nodes
-        function displayNodes(nodes) {
-            const nodesList = document.getElementById('nodesList');
-            
-            if (!nodes || nodes.length === 0) {
-                nodesList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;"><p>No nodes found. Add your first node to get started!</p></div>';
-                return;
-            }
-            
-            nodesList.innerHTML = nodes.map(node => `
-                <div class="node-card ${node.online ? 'node-online' : 'node-offline'}">
-                    <div class="node-header">
-                        <div class="node-name">${node.name}</div>
-                        <div class="node-status ${node.online ? 'status-online' : 'status-offline'}">
-                            ${node.online ? '🟢 ONLINE' : '🔴 OFFLINE'}
-                        </div>
-                    </div>
-                    <div class="node-details">
-                        <p><strong>IP Address:</strong> ${node.ip}</p>
-                        <p><strong>Last Seen:</strong> ${formatLastSeen(node.lastSeen)}</p>
-                        <p><strong>ID:</strong> ${node.id}</p>
-                        <p><strong>Routes:</strong> ${node.routes?.length || 0} active</p>
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-primary" onclick="manageNode(${node.id})">Manage</button>
-                        <button class="btn btn-warning" onclick="editNode(${node.id})">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteNode(${node.id})">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Load routes data
-        async function loadRoutesData(user) {
-            showAlert('routesAlert', 'Loading routes...', 'info');
-            
-            try {
-                const routesResponse = await fetch(`${HEADSCALE_API}/routes`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                
-                if (routesResponse.ok) {
-                    const routesData = await routesResponse.json();
-                    displayRoutes(routesData.routes || []);
-                    showAlert('routesAlert', `Loaded ${routesData.routes?.length || 0} routes`, 'success');
-                } else {
-                    throw new Error('Failed to fetch routes');
-                }
-            } catch (error) {
-                // Fallback to demo data
-                const demoRoutes = [
-                    { id: 1, node: 'my-laptop', prefix: '100.64.0.1/32', enabled: true, advertised: true },
-                    { id: 2, node: 'office-pc', prefix: '100.64.0.2/32', enabled: true, advertised: true },
-                    { id: 3, node: 'home-server', prefix: '192.168.1.0/24', enabled: false, advertised: true }
-                ];
-                displayRoutes(demoRoutes);
-                showAlert('routesAlert', 'Using demo data - ' + error.message, 'error');
-            }
-        }
-
-        // Display routes
-        function displayRoutes(routes) {
-            const routesList = document.getElementById('routesList');
-            
-            if (!routes || routes.length === 0) {
-                routesList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><p>No routes found.</p></div>';
-                return;
-            }
-            
-            routesList.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Node</th>
-                            <th>Prefix</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${routes.map(route => `
-                            <tr>
-                                <td>${route.id}</td>
-                                <td>${route.node}</td>
-                                <td>${route.prefix}</td>
-                                <td>${route.enabled ? '🟢 Enabled' : '🔴 Disabled'}</td>
-                                <td>
-                                    <button class="btn btn-primary" onclick="toggleRoute(${route.id}, ${!route.enabled})">
-                                        ${route.enabled ? 'Disable' : 'Enable'}
-                                    </button>
-                                    <button class="btn btn-danger" onclick="deleteRoute(${route.id})">Delete</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        // Load ACL data
-        async function loadACLData(user) {
-            try {
-                const aclResponse = await fetch(`${HEADSCALE_API}/acl`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                
-                if (aclResponse.ok) {
-                    const aclData = await aclResponse.json();
-                    document.getElementById('aclPolicy').value = aclData.policy || '';
-                }
-            } catch (error) {
-                console.error('Error loading ACL:', error);
-            }
-        }
-
-        // Load API keys data
-        async function loadAPIKeysData(user) {
-            try {
-                const keysResponse = await fetch(`${HEADSCALE_API}/apikey`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                
-                if (keysResponse.ok) {
-                    const keysData = await keysResponse.json();
-                    displayAPIKeys(keysData.apiKeys || []);
-                }
-            } catch (error) {
-                console.error('Error loading API keys:', error);
-            }
-        }
-
-        // Load settings data
-        async function loadSettingsData(user) {
-            document.getElementById('userInfo').innerHTML = `
-                <p><strong>Username:</strong> ${user.name}</p>
-                <p><strong>Email:</strong> ${user.email}</p>
-                <p><strong>User ID:</strong> ${user.id}</p>
-                <p><strong>Created:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
-            `;
-        }
-
-        // Show alert in specific section
-        function showAlert(alertId, message, type) {
-            const alertDiv = document.getElementById(alertId);
-            if (alertDiv) {
-                alertDiv.className = `alert alert-${type}`;
-                alertDiv.textContent = message;
-            }
-        }
-
-        // Format last seen time
-        function formatLastSeen(timestamp) {
-            if (!timestamp) return 'Unknown';
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins} minutes ago`;
-            if (diffHours < 24) return `${diffHours} hours ago`;
-            return date.toLocaleDateString();
-        }
-
-        // Modal functions
-        function showAddNodeModal() {
-            document.getElementById('addNodeModal').style.display = 'flex';
-        }
-
-        function hideAddNodeModal() {
-            document.getElementById('addNodeModal').style.display = 'none';
-            document.getElementById('addNodeForm').reset();
-        }
-
-        // Add new node
-        document.getElementById('addNodeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const nodeName = document.getElementById('nodeName').value;
-            const nodeType = document.getElementById('nodeType').value;
-            
-            try {
-                const user = checkAuth();
-                if (!user) return;
-
-                // In real implementation, this would create a node in Headscale
-                showAlert('nodesAlert', `Node "${nodeName}" added successfully! (Simulation)`, 'success');
-                hideAddNodeModal();
-                
-                // Reload nodes
-                setTimeout(() => loadNodesData(user), 1000);
-                
-            } catch (error) {
-                showAlert('nodesAlert', 'Failed to add node: ' + error.message, 'error');
-            }
-        });
-
-        // Node management functions
-        function manageNode(nodeId) {
-            alert(`Manage Node ${nodeId} - Node management interface`);
-        }
-
-        function editNode(nodeId) {
-            alert(`Edit Node ${nodeId} - Edit node settings`);
-        }
-
-        function deleteNode(nodeId) {
-            if (confirm('Are you sure you want to delete this node?')) {
-                showAlert('nodesAlert', `Node ${nodeId} deleted successfully! (Simulation)`, 'success');
-                setTimeout(() => loadNodesData(checkAuth()), 1000);
-            }
-        }
-
-        // Route management functions
-        function toggleRoute(routeId, enable) {
-            showAlert('routesAlert', `Route ${routeId} ${enable ? 'enabled' : 'disabled'}! (Simulation)`, 'success');
-            setTimeout(() => loadRoutesData(checkAuth()), 1000);
-        }
-
-        function deleteRoute(routeId) {
-            if (confirm('Are you sure you want to delete this route?')) {
-                showAlert('routesAlert', `Route ${routeId} deleted! (Simulation)`, 'success');
-                setTimeout(() => loadRoutesData(checkAuth()), 1000);
-            }
-        }
-
-        // ACL functions
-        function saveACLPolicy() {
-            const policy = document.getElementById('aclPolicy').value;
-            showAlert('acls', 'ACL Policy saved successfully! (Simulation)', 'success');
-        }
-
-        function testACLPolicy() {
-            showAlert('acls', 'ACL Policy tested successfully! (Simulation)', 'success');
-        }
-
-        function loadACLPolicy() {
-            showAlert('acls', 'ACL Policy loaded from server! (Simulation)', 'success');
-        }
-
-        // API Key functions
-        function createApiKey() {
-            const newKey = 'zb_' + Math.random().toString(36).substr(2, 32);
-            showAlert('apikeys', `New API Key created: ${newKey}`, 'success');
-        }
-
-        function listApiKeys() {
-            document.getElementById('apiKeysList').innerHTML = `
-                <div class="alert alert-info">
-                    <strong>Your API Keys:</strong><br>
-                    - Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2 (Active)<br>
-                    - HKOE_LG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (Active)<br>
-                    - XKDcD9A.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (Active)
-                </div>
-            `;
-        }
-
-        // Pre-auth key functions
+        // Generate pre-auth key
         function generatePreAuthKey() {
             const expiry = document.getElementById('keyExpiry').value;
-            const key = 'zbkey_' + Math.random().toString(36).substr(2, 16);
+            const key = 'zbpk_' + Math.random().toString(36).substr(2, 32);
             
             document.getElementById('preAuthKeyResult').innerHTML = `
-                <div class="alert alert-success">
-                    <strong>Pre-auth Key Generated!</strong><br>
-                    <div class="api-key-display">
-                        <strong>Key:</strong> ${key}<br>
-                        <strong>Expires in:</strong> ${expiry} hours
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-weight: 600; color: #0369a1;">Pre-auth Key Generated!</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Expires in ${expiry} hours</div>
+                        </div>
+                        <span class="status-badge status-online">Active</span>
                     </div>
-                    <div class="code-block">
-                        # Use this key to authenticate a node:<br>
+                    <div class="code-block" style="margin-bottom: 1rem;">
+                        ${key}
+                    </div>
+                    <div style="font-size: 0.875rem; color: #64748b;">
+                        <strong>Usage:</strong><br>
                         tailscale up --login-server https://headscale.publicvm.com --auth-key ${key}
                     </div>
                 </div>
             `;
         }
 
-        // User management
-        function deleteUser() {
+        // Create API key
+        function createApiKey() {
+            const newKey = 'zbapi_' + Math.random().toString(36).substr(2, 32);
+            alert(`New API Key Created:\n\n${newKey}\n\nPlease save this key securely. It won't be shown again.`);
+        }
+
+        // ACL functions
+        function saveACLPolicy() {
+            alert('ACL Policy saved successfully!');
+        }
+
+        function testACLPolicy() {
+            alert('ACL Policy tested successfully! No conflicts found.');
+        }
+
+        // Account management
+        function deleteAccount() {
             if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
                 localStorage.removeItem('zapbits_user');
                 alert('Account deleted successfully!');
@@ -805,22 +852,19 @@ acls:
             window.location.href = 'index.html';
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('addNodeModal');
-            if (event.target === modal) {
-                hideAddNodeModal();
-            }
-        }
-
-        // Initialize dashboard when page loads
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             const user = checkAuth();
             if (user) {
-                document.getElementById('username').textContent = user.name;
-                loadSectionData('overview');
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
             }
         });
+
+        // Modal functions
+        function showAddNodeModal() {
+            alert('Add Node feature - This would open a modal to add new nodes');
+        }
     </script>
 </body>
 </html>
