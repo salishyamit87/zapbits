@@ -21,13 +21,20 @@
         .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
         .submit-btn { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .submit-btn:hover { background: #0052cc; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
         .login-link { text-align: center; margin-top: 1.5rem; }
         .login-link a { color: #0066ff; text-decoration: none; }
+        
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 1rem; text-align: center; }
+        .alert-success { background: #e8f5e8; color: #00cc00; border: 1px solid #00cc00; }
+        .alert-error { background: #ffe8e8; color: #ff4444; border: 1px solid #ff4444; }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">ZapBits</div>
+        
+        <div id="alertMessage"></div>
         
         <div class="social-buttons">
             <button class="social-btn" onclick="signInWithGoogle()">
@@ -45,12 +52,12 @@
         
         <form id="signupForm">
             <div class="form-group">
-                <input type="email" placeholder="Email address" required>
+                <input type="email" placeholder="Email address" required id="email">
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Password" required>
+                <input type="password" placeholder="Password" required id="password">
             </div>
-            <button type="submit" class="submit-btn">Create Account</button>
+            <button type="submit" class="submit-btn" id="submitBtn">Create Account</button>
         </form>
         
         <div class="login-link">
@@ -59,26 +66,81 @@
     </div>
 
     <script>
+        // Headscale API Configuration
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => alertDiv.innerHTML = '', 5000);
+        }
+
+        // Signup form handler
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            try {
+                submitBtn.textContent = 'Creating Account...';
+                submitBtn.disabled = true;
+
+                // Create user in Headscale
+                const userResponse = await fetch(`${HEADSCALE_API}/user`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: email.split('@')[0].toLowerCase(),
+                        email: email
+                    })
+                });
+                
+                if (!userResponse.ok) {
+                    const errorData = await userResponse.json();
+                    throw new Error(errorData.message || 'Failed to create user');
+                }
+                
+                const userData = await userResponse.json();
+                
+                // Store user info locally
+                const localUserData = {
+                    id: userData.id,
+                    email: email,
+                    name: userData.name,
+                    createdAt: new Date().toISOString(),
+                    headscaleUser: userData
+                };
+                
+                localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
+                
+                showAlert('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                showAlert('Signup failed: ' + error.message, 'error');
+                submitBtn.textContent = 'Create Account';
+                submitBtn.disabled = false;
+            }
+        });
+
         function signInWithGoogle() {
-            alert('Google Sign Up - Integration Ready');
-            // Headscale API integration will be added here
+            showAlert('Google Sign Up - Coming Soon', 'error');
         }
         
         function signInWithGitHub() {
-            alert('GitHub Sign Up - Integration Ready');
-            // Headscale API integration will be added here
+            showAlert('GitHub Sign Up - Coming Soon', 'error');
         }
         
         function signInWithMicrosoft() {
-            alert('Microsoft Sign Up - Integration Ready');
-            // Headscale API integration will be added here
+            showAlert('Microsoft Sign Up - Coming Soon', 'error');
         }
-        
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Email Sign Up - Headscale User Creation Ready');
-            // Headscale API integration will be added here
-        });
     </script>
 </body>
 </html>
