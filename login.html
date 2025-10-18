@@ -66,8 +66,9 @@
     </div>
 
     <script>
-        // Netlify Functions URLs
-        const NETLIFY_FUNCTIONS_URL = '/.netlify/functions';
+        // Headscale API Configuration - DIRECT API CALLS
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
 
         function showAlert(message, type) {
             const alertDiv = document.getElementById('alertMessage');
@@ -75,7 +76,7 @@
             setTimeout(() => alertDiv.innerHTML = '', 5000);
         }
 
-        // Login form handler - REAL API INTEGRATION
+        // Login form handler - DIRECT API CALLS
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -87,27 +88,43 @@
                 submitBtn.textContent = 'Signing In...';
                 submitBtn.disabled = true;
 
-                // Check user via Netlify function
-                const username = email.split('@')[0].toLowerCase();
-                const response = await fetch(`${NETLIFY_FUNCTIONS_URL}/get-user?username=${encodeURIComponent(username)}`);
-                const result = await response.json();
+                // Get username from email
+                const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
                 
-                if (result.success) {
+                console.log('Logging in user:', username);
+
+                // Check user in Headscale DIRECTLY
+                const response = await fetch(`${HEADSCALE_API}/user/${username}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('User found:', userData);
+                    
                     // Store user info locally
                     const localUserData = {
-                        id: result.user.id,
+                        id: userData.id,
                         email: email,
-                        name: result.user.name,
+                        name: userData.name,
                         createdAt: new Date().toISOString(),
-                        headscaleUser: result.user
+                        headscaleUser: userData
                     };
                     
                     localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
                     
                     showAlert('✅ Login successful! Redirecting...', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                } else if (response.status === 404) {
+                    throw new Error('User not found. Please sign up first.');
                 } else {
-                    throw new Error(result.message);
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Login failed');
                 }
                 
             } catch (error) {
