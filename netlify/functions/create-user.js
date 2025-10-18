@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 exports.handler = async function(event, context) {
     const headers = {
         'Access-Control-Allow-Origin': '*',
@@ -23,7 +21,7 @@ exports.handler = async function(event, context) {
         // Create username from email
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
         
-        // Create user in Headscale
+        // Create user in Headscale using native fetch (available in Netlify)
         const headscaleResponse = await fetch(`${HEADSCALE_API}/user`, {
             method: 'POST',
             headers: {
