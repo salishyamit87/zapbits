@@ -9,6 +9,105 @@ class DashboardManager {
         this.currentUser = null;
     }
 
+    // Dashboard initialization fix - Add this at the beginning of init() method
+async init() {
+    try {
+        console.log('🚀 Initializing dashboard...');
+        
+        // Set current user
+        this.currentUser = Auth.getCurrentUser();
+        if (this.currentUser) {
+            headscaleAPI.setCurrentUser(this.currentUser);
+            
+            // Update UI with actual user info
+            const userEmail = this.currentUser.email || this.currentUser.username;
+            console.log('👤 User:', userEmail);
+            
+            if (userEmail) {
+                document.getElementById('userWelcome').textContent = userEmail;
+                document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
+                document.getElementById('userEmail').value = userEmail;
+                document.getElementById('userUsername').value = this.currentUser.username || userEmail;
+                document.getElementById('currentSSHUser').textContent = userEmail;
+            }
+        }
+
+        // Load initial data
+        await this.loadOverview();
+        
+        this.showNotification('Dashboard loaded successfully', 'success');
+        
+    } catch (error) {
+        console.error('❌ Dashboard initialization error:', error);
+        this.showNotification('Error loading dashboard', 'error');
+        // Load demo data as fallback
+        this.loadDemoData();
+    }
+}
+
+// Add this method to handle missing CSS classes
+updateMachinesTable(machines = this.machines) {
+    const table = document.getElementById('machinesTable');
+    
+    if (!table) {
+        console.error('❌ machinesTable element not found');
+        return;
+    }
+    
+    if (machines.length > 0) {
+        table.innerHTML = machines.map(machine => `
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${machine.online ? '#10b981' : '#6b7280'};"></div>
+                        <strong>${machine.name || 'Unnamed'}</strong>
+                    </div>
+                </td>
+                <td><code>${machine.ipAddresses ? machine.ipAddresses[0] : 'N/A'}</code></td>
+                <td>
+                    <span class="${machine.online ? 'status-badge status-online' : 'status-badge status-offline'}">
+                        ${machine.online ? 'Online' : 'Offline'}
+                    </span>
+                </td>
+                <td>${this.formatRelativeTime(machine.lastSeen)}</td>
+                <td>${machine.hostinfo?.OS || machine.os || 'Unknown'}</td>
+                <td>
+                    <div>
+                        <span class="tag ${machine.online ? 'success' : ''}">
+                            ${machine.online ? 'active' : 'inactive'}
+                        </span>
+                        ${machine.tags ? machine.tags.map(tag => `
+                            <span class="tag primary">${tag}</span>
+                        `).join('') : ''}
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button class="btn btn-outline btn-sm" onclick="dashboard.manageMachine('${machine.id}')">
+                            Manage
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="dashboard.expireMachine('${machine.id}')">
+                            Expire
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <div class="empty-state-icon">🖥️</div>
+                    <div>No machines found</div>
+                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="dashboard.showAddMachineModal()">
+                        Add Your First Machine
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
     // Initialize Dashboard
     async init() {
         // Set current user
