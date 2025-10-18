@@ -278,5 +278,94 @@ function handleOAuth(provider) {
             Auth.handleOAuth(provider);
         }
     </script>
+
+    <script>
+// OAuth Simulation
+function handleOAuth(provider) {
+    const oauthModal = document.createElement('div');
+    oauthModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    oauthModal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 12px; text-align: center; max-width: 400px; width: 90%;">
+            <h3 style="margin-bottom: 1rem;">Sign in with ${provider}</h3>
+            <p style="color: #666; margin-bottom: 1.5rem;">This would redirect to ${provider} for authentication</p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button onclick="simulateOAuthSuccess('${provider}')" 
+                        style="padding: 0.75rem 1.5rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Simulate Success
+                </button>
+                <button onclick="this.closest('div').parentElement.remove()" 
+                        style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f3f4f6; border-radius: 6px;">
+                <small style="color: #666;">
+                    <strong>Note:</strong> In production, this would redirect to ${provider}'s OAuth endpoint 
+                    and handle the authentication flow properly.
+                </small>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(oauthModal);
+}
+
+function simulateOAuthSuccess(provider) {
+    const userEmail = `${provider.toLowerCase()}user@gmail.com`;
+    
+    // Create user in Headscale
+    fetch('/api/proxy?path=user', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: userEmail
+        })
+    }).then(response => {
+        if (response.ok) {
+            // Login the user
+            Auth.currentUser = {
+                email: userEmail,
+                username: userEmail,
+                provider: provider,
+                isAdmin: false
+            };
+            Auth.isLoggedIn = true;
+            
+            localStorage.setItem('headscale_user', JSON.stringify(Auth.currentUser));
+            localStorage.setItem('headscale_loggedIn', 'true');
+            
+            Auth.showNotification(`Signed in with ${provider} successfully!`, 'success');
+            
+            // Remove modal
+            document.querySelectorAll('div').forEach(el => {
+                if (el.style.background === 'rgba(0, 0, 0, 0.8)') {
+                    el.remove();
+                }
+            });
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }
+    });
+}
+</script>
+    
 </body>
 </html>
