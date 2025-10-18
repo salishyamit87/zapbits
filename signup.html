@@ -66,8 +66,9 @@
     </div>
 
     <script>
-        // Netlify Functions URLs
-        const NETLIFY_FUNCTIONS_URL = '/.netlify/functions';
+        // Headscale API Configuration - DIRECT API CALLS
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
 
         function showAlert(message, type) {
             const alertDiv = document.getElementById('alertMessage');
@@ -75,63 +76,68 @@
             setTimeout(() => alertDiv.innerHTML = '', 5000);
         }
 
-       // Signup form handler - DIRECT API CALLS
-document.getElementById('signupForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const submitBtn = document.getElementById('submitBtn');
-    
-    try {
-        submitBtn.textContent = 'Creating Account...';
-        submitBtn.disabled = true;
+        // Signup form handler - DIRECT API CALLS
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            try {
+                submitBtn.textContent = 'Creating Account...';
+                submitBtn.disabled = true;
 
-        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
-        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
-        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+                // Create username from email
+                const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+                
+                console.log('Creating user:', username, email);
 
-        // Create user in Headscale DIRECTLY
-        const response = await fetch(`${HEADSCALE_API}/user`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: username,
-                email: email
-            })
+                // Create user in Headscale DIRECTLY
+                const response = await fetch(`${HEADSCALE_API}/user`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: username,
+                        email: email
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('User created:', userData);
+                    
+                    // Store user info locally
+                    const localUserData = {
+                        id: userData.id,
+                        email: email,
+                        name: userData.name,
+                        createdAt: new Date().toISOString(),
+                        headscaleUser: userData
+                    };
+                    
+                    localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
+                    
+                    showAlert('✅ Account created successfully in Headscale! Redirecting...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                } else {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    throw new Error(errorText || 'Failed to create user');
+                }
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                showAlert('❌ Signup failed: ' + error.message, 'error');
+                submitBtn.textContent = 'Create Account';
+                submitBtn.disabled = false;
+            }
         });
-        
-        if (response.ok) {
-            const userData = await response.json();
-            
-            // Store user info locally
-            const localUserData = {
-                id: userData.id,
-                email: email,
-                name: userData.name,
-                createdAt: new Date().toISOString(),
-                headscaleUser: userData
-            };
-            
-            localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
-            
-            showAlert('✅ Account created successfully in Headscale! Redirecting...', 'success');
-            setTimeout(() => window.location.href = 'dashboard.html', 2000);
-        } else {
-            const errorText = await response.text();
-            throw new Error(errorText);
-        }
-        
-    } catch (error) {
-        console.error('Signup error:', error);
-        showAlert('❌ Signup failed: ' + error.message, 'error');
-        submitBtn.textContent = 'Create Account';
-        submitBtn.disabled = false;
-    }
-});
 
         function signInWithGoogle() {
             showAlert('Google Sign Up - Coming Soon', 'error');
