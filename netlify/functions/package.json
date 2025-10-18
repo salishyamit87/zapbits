@@ -1,0 +1,8 @@
+{
+  "name": "zapbits-website",
+  "version": "1.0.0",
+  "description": "ZapBits Headscale Management Interface",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
