@@ -3,148 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ZapBits</title>
+    <title>Login - Headscale</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         
-        .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .logo { text-align: center; color: #0066ff; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; }
-        .social-buttons { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
-        .social-btn { padding: 12px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; }
-        .social-btn:hover { background: #f9f9f9; }
-        .divider { text-align: center; margin: 1.5rem 0; color: #666; position: relative; }
-        .divider::before { content: ''; position: absolute; left: 0; top: 50%; width: 45%; height: 1px; background: #ddd; }
-        .divider::after { content: ''; position: absolute; right: 0; top: 50%; width: 45%; height: 1px; background: #ddd; }
+        .login-container { background: white; padding: 3rem; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .logo { text-align: center; font-size: 1.5rem; font-weight: bold; color: #3b82f6; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+        input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .btn { width: 100%; padding: 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         
-        .form-group { margin-bottom: 1rem; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
-        .submit-btn { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        .submit-btn:hover { background: #0052cc; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .signup-link { text-align: center; margin-top: 1.5rem; }
-        .signup-link a { color: #0066ff; text-decoration: none; }
+        .divider { text-align: center; margin: 2rem 0; position: relative; }
+        .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e5e7eb; }
+        .divider span { background: white; padding: 0 1rem; color: #6b7280; }
         
-        .alert { padding: 10px; border-radius: 5px; margin-bottom: 1rem; text-align: center; }
-        .alert-success { background: #e8f5e8; color: #00cc00; border: 1px solid #00cc00; }
-        .alert-error { background: #ffe8e8; color: #ff4444; border: 1px solid #ff4444; }
+        .oauth-buttons { display: flex; flex-direction: column; gap: 1rem; }
+        .oauth-btn { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; cursor: pointer; transition: all 0.3s; font-weight: 500; }
+        .oauth-btn:hover { border-color: #3b82f6; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .oauth-btn.google { color: #db4437; }
+        .oauth-btn.microsoft { color: #0078d4; }
+        .oauth-btn.github { color: #333; }
+        .oauth-btn.apple { color: #000; }
+        
+        .switch-auth { text-align: center; margin-top: 2rem; }
+        .switch-auth a { color: #3b82f6; text-decoration: none; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">ZapBits</div>
+        <div class="logo">Headscale</div>
         
-        <div id="alertMessage"></div>
-        
-        <div class="social-buttons">
-            <button class="social-btn" onclick="loginWithGoogle()">
-                <span>Continue with Google</span>
+        <!-- Login Form -->
+        <form id="loginForm" style="display: block;">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" style="display: none;">
+            <div class="form-group">
+                <label for="signupEmail">Email</label>
+                <input type="email" id="signupEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+
+        <div class="divider"><span>Or continue with</span></div>
+
+        <div class="oauth-buttons">
+            <button class="oauth-btn google" onclick="oauthLogin('google')">
+                <span>Google</span>
             </button>
-            <button class="social-btn" onclick="loginWithGitHub()">
-                <span>Continue with GitHub</span>
+            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
+                <span>Microsoft</span>
             </button>
-            <button class="social-btn" onclick="loginWithMicrosoft()">
-                <span>Continue with Microsoft</span>
+            <button class="oauth-btn github" onclick="oauthLogin('github')">
+                <span>GitHub</span>
+            </button>
+            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
+                <span>Apple</span>
             </button>
         </div>
-        
-        <div class="divider">or</div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <input type="email" placeholder="Email address" required id="email">
-            </div>
-            <div class="form-group">
-                <input type="password" placeholder="Password" required id="password">
-            </div>
-            <button type="submit" class="submit-btn" id="submitBtn">Sign In</button>
-        </form>
-        
-        <div class="signup-link">
-            Don't have an account? <a href="signup.html">Sign up</a>
+
+        <div class="switch-auth">
+            <a href="#" id="switchAuth">Don't have an account? Sign up</a>
         </div>
     </div>
 
     <script>
-        // Headscale API Configuration - DIRECT API CALLS
-        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
-        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
-
-        function showAlert(message, type) {
-            const alertDiv = document.getElementById('alertMessage');
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => alertDiv.innerHTML = '', 5000);
-        }
-
-        // Login form handler - DIRECT API CALLS
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        // Toggle between login and signup
+        document.getElementById('switchAuth').addEventListener('click', function(e) {
             e.preventDefault();
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const switchLink = document.getElementById('switchAuth');
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submitBtn');
-            
-            try {
-                submitBtn.textContent = 'Signing In...';
-                submitBtn.disabled = true;
-
-                // Get username from email
-                const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                
-                console.log('Logging in user:', username);
-
-                // Check user in Headscale DIRECTLY
-                const response = await fetch(`${HEADSCALE_API}/user/${username}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${API_KEY}`
-                    }
-                });
-                
-                console.log('Response status:', response.status);
-                
-                if (response.ok) {
-                    const userData = await response.json();
-                    console.log('User found:', userData);
-                    
-                    // Store user info locally
-                    const localUserData = {
-                        id: userData.id,
-                        email: email,
-                        name: userData.name,
-                        createdAt: new Date().toISOString(),
-                        headscaleUser: userData
-                    };
-                    
-                    localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
-                    
-                    showAlert('✅ Login successful! Redirecting...', 'success');
-                    setTimeout(() => window.location.href = 'dashboard.html', 2000);
-                } else if (response.status === 404) {
-                    throw new Error('User not found. Please sign up first.');
-                } else {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Login failed');
-                }
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                showAlert('❌ Login failed: ' + error.message, 'error');
-                submitBtn.textContent = 'Sign In';
-                submitBtn.disabled = false;
+            if (loginForm.style.display === 'block') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                switchLink.textContent = 'Already have an account? Sign in';
+            } else {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                switchLink.textContent = 'Don\'t have an account? Sign up';
             }
         });
 
-        function loginWithGoogle() {
-            showAlert('Google Login - Coming Soon', 'error');
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            handleLogin(email, password);
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            handleSignup(email, password);
+        });
+
+        function handleLogin(email, password) {
+            // Headscale API integration yahan aayega
+            console.log('Login:', email);
+            // Temporary redirect to dashboard
+            window.location.href = 'dashboard.html';
         }
-        
-        function loginWithGitHub() {
-            showAlert('GitHub Login - Coming Soon', 'error');
+
+        function handleSignup(email, password) {
+            // Headscale API integration yahan aayega
+            console.log('Signup:', email);
+            // Create user in Headscale and redirect to dashboard
+            window.location.href = 'dashboard.html';
         }
-        
-        function loginWithMicrosoft() {
-            showAlert('Microsoft Login - Coming Soon', 'error');
+
+        function oauthLogin(provider) {
+            // OAuth integration yahan aayega
+            console.log('OAuth login:', provider);
+            // Redirect to OAuth provider
         }
     </script>
 </body>
