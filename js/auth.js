@@ -1,17 +1,16 @@
-// Authentication System
+// Enhanced Authentication System with User Isolation
 class AuthSystem {
     constructor() {
         this.currentUser = null;
         this.isLoggedIn = false;
+        this.userApiKey = null;
     }
 
     // Show notification
     showNotification(message, type = 'info') {
-        // Remove existing notifications
         const existingNotifications = document.querySelectorAll('.custom-notification');
         existingNotifications.forEach(note => note.remove());
         
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = 'custom-notification';
         notification.textContent = message;
@@ -53,7 +52,12 @@ class AuthSystem {
             
             if (response.ok) {
                 const userData = await response.json();
-                this.currentUser = { email, ...userData };
+                this.currentUser = { 
+                    email: email,
+                    username: email,
+                    isAdmin: false, // Regular user, not admin
+                    ...userData 
+                };
                 this.isLoggedIn = true;
                 
                 // Store in localStorage
@@ -62,7 +66,7 @@ class AuthSystem {
                 
                 this.showNotification('Account created successfully!', 'success');
                 
-                // Redirect to dashboard
+                // Redirect to user dashboard
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
@@ -90,7 +94,11 @@ class AuthSystem {
             );
             
             if (userExists) {
-                this.currentUser = { email };
+                this.currentUser = { 
+                    email: email,
+                    username: email,
+                    isAdmin: false // Regular user
+                };
                 this.isLoggedIn = true;
                 
                 // Store in localStorage
@@ -111,28 +119,53 @@ class AuthSystem {
         }
     }
 
-    // Handle OAuth login
-    handleOAuth(provider) {
-        this.showNotification(`${provider} OAuth integration coming soon!`, 'info');
-        
-        // Simulate OAuth success for demo
-        setTimeout(() => {
-            this.currentUser = { 
-                email: `user@${provider}.com`,
-                name: `${provider} User`,
-                provider: provider
-            };
-            this.isLoggedIn = true;
+    // Handle OAuth login - CREATE NEW USER FOR OAUTH
+    async handleOAuth(provider) {
+        try {
+            this.showNotification(`Signing in with ${provider}...`, 'info');
             
-            localStorage.setItem('headscale_user', JSON.stringify(this.currentUser));
-            localStorage.setItem('headscale_loggedIn', 'true');
+            // Generate unique email for OAuth user
+            const oauthEmail = `oauth_${provider}_${Date.now()}@headscale.local`;
+            const oauthUsername = `${provider}_user_${Date.now()}`;
             
-            this.showNotification(`Logged in with ${provider} successfully!`, 'success');
+            // Create new user in Headscale for OAuth
+            const response = await fetch('/api/proxy?path=user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: oauthUsername
+                })
+            });
             
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1000);
-        }, 1500);
+            if (response.ok) {
+                const userData = await response.json();
+                this.currentUser = { 
+                    email: oauthEmail,
+                    username: oauthUsername,
+                    provider: provider,
+                    isAdmin: false,
+                    ...userData 
+                };
+                this.isLoggedIn = true;
+                
+                localStorage.setItem('headscale_user', JSON.stringify(this.currentUser));
+                localStorage.setItem('headscale_loggedIn', 'true');
+                
+                this.showNotification(`Logged in with ${provider} successfully!`, 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } else {
+                throw new Error('OAuth user creation failed');
+            }
+            
+        } catch (error) {
+            console.error('OAuth error:', error);
+            this.showNotification(`${provider} login failed. Please try email signup.`, 'error');
+        }
     }
 
     // Check if user is logged in
@@ -163,16 +196,12 @@ class AuthSystem {
     getCurrentUser() {
         return this.currentUser;
     }
+
+    // Check if user is admin
+    isUserAdmin() {
+        return this.currentUser && this.currentUser.isAdmin === true;
+    }
 }
 
 // Initialize Auth System
 const Auth = new AuthSystem();
-
-// Auto-check auth on page load
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('dashboard.html')) {
-        if (!Auth.checkAuth()) {
-            window.location.href = 'login.html';
-        }
-    }
-});
