@@ -21,13 +21,20 @@
         .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
         .submit-btn { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .submit-btn:hover { background: #0052cc; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
         .signup-link { text-align: center; margin-top: 1.5rem; }
         .signup-link a { color: #0066ff; text-decoration: none; }
+        
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 1rem; text-align: center; }
+        .alert-success { background: #e8f5e8; color: #00cc00; border: 1px solid #00cc00; }
+        .alert-error { background: #ffe8e8; color: #ff4444; border: 1px solid #ff4444; }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">ZapBits</div>
+        
+        <div id="alertMessage"></div>
         
         <div class="social-buttons">
             <button class="social-btn" onclick="loginWithGoogle()">
@@ -45,12 +52,12 @@
         
         <form id="loginForm">
             <div class="form-group">
-                <input type="email" placeholder="Email address" required>
+                <input type="email" placeholder="Email address" required id="email">
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Password" required>
+                <input type="password" placeholder="Password" required id="password">
             </div>
-            <button type="submit" class="submit-btn">Sign In</button>
+            <button type="submit" class="submit-btn" id="submitBtn">Sign In</button>
         </form>
         
         <div class="signup-link">
@@ -59,23 +66,79 @@
     </div>
 
     <script>
+        // Headscale API Configuration
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => alertDiv.innerHTML = '', 5000);
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            try {
+                submitBtn.textContent = 'Signing In...';
+                submitBtn.disabled = true;
+
+                // Check if user exists in Headscale
+                const username = email.split('@')[0].toLowerCase();
+                const userResponse = await fetch(`${HEADSCALE_API}/user/${username}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+                
+                if (!userResponse.ok) {
+                    if (userResponse.status === 404) {
+                        throw new Error('User not found. Please sign up first.');
+                    }
+                    throw new Error('Login failed');
+                }
+                
+                const userData = await userResponse.json();
+                
+                // Store user info locally
+                const localUserData = {
+                    id: userData.id,
+                    email: email,
+                    name: userData.name,
+                    createdAt: new Date().toISOString(),
+                    headscaleUser: userData
+                };
+                
+                localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
+                
+                showAlert('Login successful! Redirecting...', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Login failed: ' + error.message, 'error');
+                submitBtn.textContent = 'Sign In';
+                submitBtn.disabled = false;
+            }
+        });
+
         function loginWithGoogle() {
-            alert('Google Login - Headscale API Integration Ready');
+            showAlert('Google Login - Coming Soon', 'error');
         }
         
         function loginWithGitHub() {
-            alert('GitHub Login - Headscale API Integration Ready');
+            showAlert('GitHub Login - Coming Soon', 'error');
         }
         
         function loginWithMicrosoft() {
-            alert('Microsoft Login - Headscale API Integration Ready');
+            showAlert('Microsoft Login - Coming Soon', 'error');
         }
-        
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Email Login - Headscale Authentication Ready');
-            // Headscale API integration will be added here
-        });
     </script>
 </body>
 </html>
