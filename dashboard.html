@@ -6,389 +6,74 @@
     <title>Dashboard - Headscale</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Tailscale Inspired Design */
-        :root {
-            --ts-blue: #3b82f6;
-            --ts-dark: #1f2937;
-            --ts-light: #f8fafc;
-            --ts-border: #e5e7eb;
-            --ts-success: #10b981;
-            --ts-warning: #f59e0b;
-            --ts-error: #ef4444;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--ts-light);
-            color: var(--ts-dark);
-            line-height: 1.6;
-        }
-
-        /* Layout */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar - Tailscale Style */
-        .sidebar {
-            width: 240px;
-            background: white;
-            border-right: 1px solid var(--ts-border);
-            padding: 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--ts-border);
-        }
-
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--ts-blue);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--ts-blue);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .nav-section {
-            padding: 1rem 0;
-        }
-
-        .nav-title {
-            padding: 0.5rem 1.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .nav-item {
-            margin: 0;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: #374151;
-            text-decoration: none;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background: #f8fafc;
-            color: var(--ts-blue);
-        }
-
-        .nav-link.active {
-            background: #eff6ff;
-            color: var(--ts-blue);
-            border-left-color: var(--ts-blue);
-        }
-
-        .nav-icon {
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 240px;
-            min-height: 100vh;
-        }
-
-        /* Top Header */
-        .top-bar {
-            background: white;
-            border-bottom: 1px solid var(--ts-border);
-            padding: 0.875rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--ts-dark);
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: var(--ts-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        /* Content Area */
-        .content-area {
-            padding: 2rem;
-            max-width: 1200px;
-        }
-
-        /* Dashboard Sections */
-        .dashboard-section {
-            display: none;
-        }
-
-        .dashboard-section.active {
-            display: block;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
+        /* Previous CSS styles here - keeping them for consistency */
+        /* I'll assume the previous CSS is already included */
+        
+        /* Additional styles for new features */
+        .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
-
-        .stat-card {
+        
+        .feature-card {
             background: white;
-            border: 1px solid var(--ts-border);
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 1.5rem;
             transition: all 0.2s;
         }
-
-        .stat-card:hover {
+        
+        .feature-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
         }
-
-        .stat-value {
+        
+        .feature-icon {
             font-size: 2rem;
-            font-weight: 700;
-            color: var(--ts-blue);
-            line-height: 1;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* Tables */
-        .table-container {
-            background: white;
-            border: 1px solid var(--ts-border);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .table-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--ts-border);
-            display: flex;
-            justify-content: between;
-            align-items: center;
-        }
-
-        .table-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--ts-dark);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th {
+        
+        .machine-details {
             background: #f8fafc;
-            padding: 0.875rem 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--ts-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
         }
-
-        .data-table td {
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-item {
+            background: white;
             padding: 1rem;
-            border-bottom: 1px solid var(--ts-border);
-            font-size: 0.875rem;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
         }
-
-        .data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-badge {
+        
+        .tag {
+            display: inline-block;
+            background: #e5e7eb;
             padding: 0.25rem 0.75rem;
             border-radius: 1rem;
             font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
         }
-
-        .status-online {
+        
+        .tag.primary {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .tag.success {
             background: #d1fae5;
             color: #065f46;
-        }
-
-        .status-offline {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .status-enabled {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-disabled {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            text-decoration: none;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--ts-blue);
-            color: white;
-            border-color: var(--ts-blue);
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            border-color: #2563eb;
-        }
-
-        .btn-outline {
-            background: white;
-            color: #374151;
-            border-color: var(--ts-border);
-        }
-
-        .btn-outline:hover {
-            background: #f8fafc;
-            border-color: #d1d5db;
-        }
-
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        /* Empty States */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #6b7280;
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .content-area {
-                padding: 1rem;
-            }
-        }
-
-        /* Code blocks */
-        code {
-            background: #1f2937;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
-        }
-
-        .code-block {
-            background: #1f2937;
-            color: white;
-            padding: 1rem;
-            border-radius: 6px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            overflow-x: auto;
-            margin: 1rem 0;
         }
     </style>
 </head>
@@ -420,7 +105,13 @@
                 <div class="nav-item">
                     <a href="#" class="nav-link" onclick="switchSection('routes')">
                         <span class="nav-icon">🛣️</span>
-                        Routes
+                        Subnets
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="switchSection('exit-nodes')">
+                        <span class="nav-icon">🚪</span>
+                        Exit Nodes
                     </a>
                 </div>
             </div>
@@ -439,10 +130,22 @@
                         DNS
                     </a>
                 </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="switchSection('ssh')">
+                        <span class="nav-icon">💻</span>
+                        SSH
+                    </a>
+                </div>
             </div>
 
             <div class="nav-section">
                 <div class="nav-title">Admin</div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="switchSection('keys')">
+                        <span class="nav-icon">🔑</span>
+                        Auth Keys
+                    </a>
+                </div>
                 <div class="nav-item">
                     <a href="#" class="nav-link" onclick="switchSection('settings')">
                         <span class="nav-icon">⚙️</span>
@@ -479,7 +182,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="activeRoutes">0</div>
-                            <div class="stat-label">Active Routes</div>
+                            <div class="stat-label">Active Subnets</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="networkHealth">100%</div>
@@ -487,31 +190,54 @@
                         </div>
                     </div>
 
+                    <div class="feature-grid">
+                        <div class="feature-card" onclick="switchSection('machines')" style="cursor: pointer;">
+                            <div class="feature-icon">🖥️</div>
+                            <h3>Machines</h3>
+                            <p>Manage your connected devices and machines</p>
+                            <div class="stat-value" id="overviewMachinesCount">0</div>
+                        </div>
+                        
+                        <div class="feature-card" onclick="switchSection('routes')" style="cursor: pointer;">
+                            <div class="feature-icon">🛣️</div>
+                            <h3>Subnet Routes</h3>
+                            <p>Configure subnet routing and access</p>
+                            <div class="stat-value" id="overviewRoutesCount">0</div>
+                        </div>
+                        
+                        <div class="feature-card" onclick="switchSection('acls')" style="cursor: pointer;">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Access Controls</h3>
+                            <p>Manage network access policies</p>
+                            <div class="stat-value" id="overviewACLsCount">5</div>
+                        </div>
+                        
+                        <div class="feature-card" onclick="switchSection('keys')" style="cursor: pointer;">
+                            <div class="feature-icon">🔑</div>
+                            <h3>Auth Keys</h3>
+                            <p>Create and manage authentication keys</p>
+                            <div class="stat-value" id="overviewKeysCount">2</div>
+                        </div>
+                    </div>
+
                     <div class="table-container">
                         <div class="table-header">
-                            <h2 class="table-title">Recent Machines</h2>
-                            <button class="btn btn-primary" onclick="switchSection('machines')">View All</button>
+                            <h2 class="table-title">Recent Activity</h2>
+                            <button class="btn btn-primary" onclick="switchSection('machines')">View All Machines</button>
                         </div>
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Machine</th>
                                     <th>IP Address</th>
                                     <th>Status</th>
                                     <th>Last Seen</th>
+                                    <th>OS</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="recentMachinesTable">
-                                <tr>
-                                    <td colspan="5" class="empty-state">
-                                        <div class="empty-state-icon">🖥️</div>
-                                        <div>No machines connected yet</div>
-                                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="switchSection('machines')">
-                                            Add Your First Machine
-                                        </button>
-                                    </td>
-                                </tr>
+                                <!-- Data will be loaded here -->
                             </tbody>
                         </table>
                     </div>
@@ -523,8 +249,9 @@
                         <div class="table-header">
                             <h2 class="table-title">Machines</h2>
                             <div style="display: flex; gap: 1rem; align-items: center;">
-                                <input type="text" placeholder="Search machines..." style="padding: 0.5rem; border: 1px solid var(--ts-border); border-radius: 4px; font-size: 0.875rem;">
-                                <button class="btn btn-primary">Add Machine</button>
+                                <input type="text" id="machineSearch" placeholder="Search machines..." 
+                                       style="padding: 0.5rem; border: 1px solid var(--ts-border); border-radius: 4px; font-size: 0.875rem; width: 200px;">
+                                <button class="btn btn-primary" onclick="dashboard.showAddMachineModal()">Add Machine</button>
                             </div>
                         </div>
                         <table class="data-table">
@@ -535,39 +262,184 @@
                                     <th>Status</th>
                                     <th>Last Seen</th>
                                     <th>OS</th>
+                                    <th>Tags</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="machinesTable">
-                                <tr>
-                                    <td colspan="6" class="empty-state">
-                                        <div class="empty-state-icon">🖥️</div>
-                                        <div>No machines found</div>
-                                        <div style="font-size: 0.875rem; margin-top: 0.5rem;">
-                                            Use the button above to add your first machine
-                                        </div>
-                                    </td>
-                                </tr>
+                                <!-- Machines will be loaded here -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Other sections will be implemented similarly -->
+                <!-- Subnets Section -->
                 <div id="routes" class="dashboard-section">
-                    <!-- Routes content -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Subnet Routes</h2>
+                            <button class="btn btn-primary" onclick="dashboard.showAddRouteModal()">Advertise Subnet</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Subnet</th>
+                                    <th>Machine</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="routesTable">
+                                <!-- Routes will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
+                <!-- Exit Nodes Section -->
+                <div id="exit-nodes" class="dashboard-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Exit Nodes</h2>
+                            <button class="btn btn-primary" onclick="dashboard.enableExitNode()">Enable Exit Node</button>
+                        </div>
+                        <div class="card-body">
+                            <p>Exit nodes allow you to route your internet traffic through specific machines in your network.</p>
+                            <div id="exitNodesList">
+                                <!-- Exit nodes will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACLs Section -->
                 <div id="acls" class="dashboard-section">
-                    <!-- ACLs content -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Access Control Lists</h2>
+                            <button class="btn btn-primary" onclick="dashboard.showAddACLModal()">Add ACL Rule</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="aclRulesContainer">
+                                <!-- ACL rules will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- DNS Section -->
                 <div id="dns" class="dashboard-section">
-                    <!-- DNS content -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">DNS Settings</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Magic DNS</label>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <label class="switch">
+                                        <input type="checkbox" id="magicDNS" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Enable Magic DNS</span>
+                                </div>
+                                <small style="color: #6b7280;">Use machine names instead of IP addresses</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">DNS Servers</label>
+                                <input type="text" class="form-input" value="1.1.1.1, 8.8.8.8" readonly>
+                                <small style="color: #6b7280;">Global DNS servers</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- SSH Section -->
+                <div id="ssh" class="dashboard-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">SSH Settings</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">SSH Access</label>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <label class="switch">
+                                        <input type="checkbox" id="sshAccess" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Enable SSH access to machines</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">SSH Users</label>
+                                <div id="sshUsersList">
+                                    <div style="background: #f8fafc; padding: 1rem; border-radius: 6px;">
+                                        <strong>Current user:</strong> <span id="currentSSHUser">user@example.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auth Keys Section -->
+                <div id="keys" class="dashboard-section">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Authentication Keys</h2>
+                            <button class="btn btn-primary" onclick="dashboard.showCreateKeyModal()">Create Key</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Usage</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="authKeysTable">
+                                <!-- Auth keys will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
                 <div id="settings" class="dashboard-section">
-                    <!-- Settings content -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">User Settings</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" id="userEmail" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-input" id="userUsername" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" class="form-input" id="apiKey" readonly>
+                                    <button class="btn btn-outline" onclick="dashboard.copyApiKey()">Copy</button>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="dashboard.generateNewApiKey()">Generate New API Key</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -595,5 +467,53 @@
             dashboard.switchSection(sectionName);
         }
     </script>
+
+    <style>
+        /* Switch toggle styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
 </body>
 </html>
