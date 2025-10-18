@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 exports.handler = async function(event, context) {
     const headers = {
         'Access-Control-Allow-Origin': '*',
@@ -20,7 +18,7 @@ exports.handler = async function(event, context) {
         const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
         const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
         
-        // Get user from Headscale
+        // Get user from Headscale using native fetch
         const headscaleResponse = await fetch(`${HEADSCALE_API}/user/${username}`, {
             method: 'GET',
             headers: {
