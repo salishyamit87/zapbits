@@ -99,81 +99,124 @@
     </main>
 
     <script>
-        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
-        const HEADSCALE_URL = 'https://headscale.publicvm.com';
+    // Real Headscale API Integration
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRealData();
+    });
 
-        // Load user data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            loadNodes();
+    async function loadRealData() {
+        try {
+            // Load real users from Headscale
+            const users = await headscaleAPI.listUsers();
+            console.log('Real users:', users);
+            
+            // Load real nodes from Headscale
+            const nodes = await headscaleAPI.listNodes();
+            console.log('Real nodes:', nodes);
+            
+            // Update UI with real data
+            updateDashboardWithRealData(nodes, users);
+            
+        } catch (error) {
+            console.error('Error loading real data:', error);
+            // Fallback to demo data if API fails
+            loadDemoData();
+        }
+    }
+
+    function updateDashboardWithRealData(nodes, users) {
+        // Update stats
+        document.getElementById('totalNodes').textContent = nodes.nodes ? nodes.nodes.length : 0;
+        
+        const connectedNodes = nodes.nodes ? nodes.nodes.filter(node => 
+            node.online === true
+        ).length : 0;
+        
+        document.getElementById('connectedNodes').textContent = connectedNodes;
+        
+        // Load routes for routes count
+        headscaleAPI.listRoutes().then(routes => {
+            const activeRoutes = routes.routes ? routes.routes.filter(route => 
+                route.enabled === true
+            ).length : 0;
+            document.getElementById('routes').textContent = activeRoutes;
         });
 
-        async function loadUserData() {
-            try {
-                const response = await fetch('/api/v1/user', {
-                    headers: {
-                        'Authorization': `Bearer ${API_KEY}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('User data:', data);
-                    // Update UI with user data
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            }
+        // Update nodes table
+        const table = document.getElementById('nodesTable');
+        if (nodes.nodes && nodes.nodes.length > 0) {
+            table.innerHTML = nodes.nodes.map(node => `
+                <tr>
+                    <td>${node.name || node.givenName || 'Unnamed'}</td>
+                    <td>${node.ipAddresses ? node.ipAddresses[0] : 'N/A'}</td>
+                    <td class="${node.online ? 'status-connected' : 'status-disconnected'}">
+                        ${node.online ? 'Connected' : 'Disconnected'}
+                    </td>
+                    <td>${node.lastSeen ? HeadscaleUI.formatDate(node.lastSeen) : 'Never'}</td>
+                    <td>
+                        <button class="btn btn-outline" onclick="manageNode('${node.id}')">Manage</button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            table.innerHTML = '<tr><td colspan="5" style="text-align: center;">No nodes found</td></tr>';
         }
+    }
 
-        async function loadNodes() {
-            try {
-                // This will be implemented with actual Headscale API calls
-                // For now, showing demo data
-                const demoNodes = [
-                    { name: 'laptop-user', ip: '100.64.0.1', status: 'connected', lastSeen: '2 minutes ago' },
-                    { name: 'server-prod', ip: '100.64.0.2', status: 'connected', lastSeen: '5 minutes ago' },
-                    { name: 'phone-mobile', ip: '100.64.0.3', status: 'disconnected', lastSeen: '1 hour ago' }
-                ];
+    function loadDemoData() {
+        // Use demo data if API fails
+        const table = document.getElementById('nodesTable');
+        table.innerHTML = demoData.nodes.map(node => `
+            <tr>
+                <td>${node.name}</td>
+                <td>${node.ip}</td>
+                <td class="${HeadscaleUI.getStatusClass(node.status)}">${node.status}</td>
+                <td>${HeadscaleUI.formatDate(node.lastSeen)}</td>
+                <td>
+                    <button class="btn btn-outline" onclick="manageNode('${node.id}')">Manage</button>
+                </td>
+            </tr>
+        `).join('');
 
-                const table = document.getElementById('nodesTable');
-                table.innerHTML = demoNodes.map(node => `
-                    <tr>
-                        <td>${node.name}</td>
-                        <td>${node.ip}</td>
-                        <td class="status-${node.status}">${node.status}</td>
-                        <td>${node.lastSeen}</td>
-                        <td>
-                            <button class="btn btn-outline" onclick="manageNode('${node.name}')">Manage</button>
-                        </td>
-                    </tr>
-                `).join('');
+        document.getElementById('totalNodes').textContent = demoData.nodes.length;
+        document.getElementById('connectedNodes').textContent = 
+            demoData.nodes.filter(n => n.status === 'connected').length;
+        document.getElementById('routes').textContent = '2';
+        
+        HeadscaleUI.showNotification('Using demo data - API connection failed', 'warning');
+    }
 
-                // Update stats
-                document.getElementById('totalNodes').textContent = demoNodes.length;
-                document.getElementById('connectedNodes').textContent = demoNodes.filter(n => n.status === 'connected').length;
-                document.getElementById('routes').textContent = '2';
+    function addNewNode() {
+        // Show instructions to connect new device
+        const instructions = `
+## How to Connect a New Device:
 
-            } catch (error) {
-                console.error('Error loading nodes:', error);
-            }
+### 1. Install Tailscale
+- **Windows**: Download from tailscale.com
+- **macOS**: \`brew install tailscale\`
+- **Linux**: \`curl -fsSL https://tailscale.com/install.sh | sh\`
+
+### 2. Connect to Headscale
+\`\`\`bash
+tailscale up --login-server https://headscale.publicvm.com
+\`\`\`
+
+### 3. Follow the authentication process
+`;
+        alert('Check browser console for connection instructions');
+        console.log(instructions);
+    }
+
+    function manageNode(nodeId) {
+        HeadscaleUI.showNotification(`Managing node: ${nodeId}`, 'info');
+        // Open node management modal would go here
+    }
+
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            window.location.href = 'index.html';
         }
-
-        function addNewNode() {
-            alert('Add new node functionality will be implemented here');
-            // This will show instructions to install Tailscale and connect to headscale
-        }
-
-        function manageNode(nodeName) {
-            alert(`Manage node: ${nodeName}`);
-            // This will open node management modal
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = 'index.html';
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
