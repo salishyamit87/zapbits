@@ -4,41 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Headscale</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { 
+            background: white; 
+            padding: 3rem; 
+            border-radius: 0.5rem; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 400px; 
+            margin: 2rem auto;
+        }
+        .logo { 
+            text-align: center; 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            color: #3b82f6; 
+            margin-bottom: 2rem; 
+        }
+        .form-group { 
+            margin-bottom: 1.5rem; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #374151; 
+            font-weight: 500; 
+        }
+        input { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #d1d5db; 
+            border-radius: 0.375rem; 
+            font-size: 1rem; 
+        }
+        input:focus { 
+            outline: none; 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
+        }
+        .btn { 
+            width: 100%; 
+            padding: 0.75rem; 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 0.375rem; 
+            font-size: 1rem; 
+            font-weight: 500; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+        }
+        .btn:hover { 
+            background: #2563eb; 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
         
-        .login-container { background: white; padding: 3rem; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .logo { text-align: center; font-size: 1.5rem; font-weight: bold; color: #3b82f6; margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
-        input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
-        input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .btn { width: 100%; padding: 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s; }
-        .btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .divider { 
+            text-align: center; 
+            margin: 2rem 0; 
+            position: relative; 
+        }
+        .divider::before { 
+            content: ''; 
+            position: absolute; 
+            top: 50%; 
+            left: 0; 
+            right: 0; 
+            height: 1px; 
+            background: #e5e7eb; 
+        }
+        .divider span { 
+            background: white; 
+            padding: 0 1rem; 
+            color: #6b7280; 
+        }
         
-        .divider { text-align: center; margin: 2rem 0; position: relative; }
-        .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e5e7eb; }
-        .divider span { background: white; padding: 0 1rem; color: #6b7280; }
-        
-        .oauth-buttons { display: flex; flex-direction: column; gap: 1rem; }
-        .oauth-btn { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; cursor: pointer; transition: all 0.3s; font-weight: 500; }
-        .oauth-btn:hover { border-color: #3b82f6; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .oauth-buttons { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1rem; 
+        }
+        .oauth-btn { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.75rem; 
+            padding: 0.75rem; 
+            border: 1px solid #d1d5db; 
+            border-radius: 0.375rem; 
+            background: white; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-weight: 500; 
+            width: 100%;
+        }
+        .oauth-btn:hover { 
+            border-color: #3b82f6; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
         .oauth-btn.google { color: #db4437; }
         .oauth-btn.microsoft { color: #0078d4; }
         .oauth-btn.github { color: #333; }
         .oauth-btn.apple { color: #000; }
         
-        .switch-auth { text-align: center; margin-top: 2rem; }
-        .switch-auth a { color: #3b82f6; text-decoration: none; }
+        .switch-auth { 
+            text-align: center; 
+            margin-top: 2rem; 
+        }
+        .switch-auth a { 
+            color: #3b82f6; 
+            text-decoration: none; 
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">Headscale</div>
         
-        <!-- Login Form -->
-        <form id="loginForm" style="display: block;">
+        <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" required>
@@ -50,7 +135,6 @@
             <button type="submit" class="btn">Sign In</button>
         </form>
 
-        <!-- Signup Form -->
         <form id="signupForm" style="display: none;">
             <div class="form-group">
                 <label for="signupEmail">Email</label>
@@ -70,16 +154,16 @@
         <div class="divider"><span>Or continue with</span></div>
 
         <div class="oauth-buttons">
-            <button class="oauth-btn google" onclick="oauthLogin('google')">
+            <button class="oauth-btn google" onclick="handleOAuth('google')">
                 <span>Google</span>
             </button>
-            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
+            <button class="oauth-btn microsoft" onclick="handleOAuth('microsoft')">
                 <span>Microsoft</span>
             </button>
-            <button class="oauth-btn github" onclick="oauthLogin('github')">
+            <button class="oauth-btn github" onclick="handleOAuth('github')">
                 <span>GitHub</span>
             </button>
-            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
+            <button class="oauth-btn apple" onclick="handleOAuth('apple')">
                 <span>Apple</span>
             </button>
         </div>
@@ -89,15 +173,15 @@
         </div>
     </div>
 
+    <script src="js/auth.js"></script>
     <script>
-        // Toggle between login and signup
         document.getElementById('switchAuth').addEventListener('click', function(e) {
             e.preventDefault();
             const loginForm = document.getElementById('loginForm');
             const signupForm = document.getElementById('signupForm');
             const switchLink = document.getElementById('switchAuth');
             
-            if (loginForm.style.display === 'block') {
+            if (loginForm.style.display !== 'none') {
                 loginForm.style.display = 'none';
                 signupForm.style.display = 'block';
                 switchLink.textContent = 'Already have an account? Sign in';
@@ -108,39 +192,29 @@
             }
         });
 
-        // Form submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            handleLogin(email, password);
+            Auth.handleLogin(email, password);
         });
 
         document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-            handleSignup(email, password);
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                Auth.showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            Auth.handleSignup(email, password);
         });
 
-        function handleLogin(email, password) {
-            // Headscale API integration yahan aayega
-            console.log('Login:', email);
-            // Temporary redirect to dashboard
-            window.location.href = 'dashboard.html';
-        }
-
-        function handleSignup(email, password) {
-            // Headscale API integration yahan aayega
-            console.log('Signup:', email);
-            // Create user in Headscale and redirect to dashboard
-            window.location.href = 'dashboard.html';
-        }
-
-        function oauthLogin(provider) {
-            // OAuth integration yahan aayega
-            console.log('OAuth login:', provider);
-            // Redirect to OAuth provider
+        function handleOAuth(provider) {
+            Auth.handleOAuth(provider);
         }
     </script>
 </body>
