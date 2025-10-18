@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 exports.handler = async function(event, context) {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
     };
 
@@ -16,11 +16,12 @@ exports.handler = async function(event, context) {
     }
     
     try {
-        const { email, name } = JSON.parse(event.body);
+        const { email } = JSON.parse(event.body);
         const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
         const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
         
-        console.log('Creating user:', email);
+        // Create username from email
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
         
         // Create user in Headscale
         const headscaleResponse = await fetch(`${HEADSCALE_API}/user`, {
@@ -30,39 +31,35 @@ exports.handler = async function(event, context) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                name: username,
                 email: email
             })
         });
         
         if (headscaleResponse.ok) {
             const userData = await headscaleResponse.json();
-            console.log('User created successfully:', userData);
             
             return {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({ 
                     success: true, 
-                    message: 'User created successfully',
+                    message: 'User created successfully in Headscale',
                     user: userData
                 })
             };
         } else {
             const errorText = await headscaleResponse.text();
-            console.error('Headscale error:', errorText);
-            
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
                     success: false, 
-                    message: `Headscale API error: ${headscaleResponse.status} - ${errorText}` 
+                    message: `Headscale error: ${errorText}` 
                 })
             };
         }
     } catch (error) {
-        console.error('Server error:', error);
         return {
             statusCode: 500,
             headers,
