@@ -91,27 +91,17 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         submitBtn.textContent = 'Signing In...';
         submitBtn.disabled = true;
 
-        // Check user via Netlify function
-        const username = email.split('@')[0].toLowerCase();
-        const response = await fetch(`${NETLIFY_FUNCTIONS_URL}/get-user?username=${username}`);
-        const result = await response.json();
+        // Temporary: Simulate API call with delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        if (result.success) {
-            // Store user info locally
-            const localUserData = {
-                id: result.user.id,
-                email: email,
-                name: result.user.name,
-                createdAt: new Date().toISOString(),
-                headscaleUser: result.user
-            };
-            
-            localStorage.setItem('zapbits_user', JSON.stringify(localUserData));
-            
-            showAlert('Login successful! Redirecting...', 'success');
-            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        // For demo, check if user exists locally
+        const existingUser = localStorage.getItem('zapbits_user');
+        
+        if (existingUser) {
+            showAlert('Login successful! (Demo Mode)', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 1000);
         } else {
-            throw new Error(result.message);
+            throw new Error('No account found. Please sign up first.');
         }
         
     } catch (error) {
