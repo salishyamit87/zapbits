@@ -17,11 +17,11 @@ export default async function handler(request, response) {
   const { query } = request;
   const path = query.path || '';
   
-  // Environment variables se values lo (Vercel pe set karein)
+  // Environment variables se values lo
   const HEADSCALE_URL = process.env.HEADSCALE_URL || 'https://headscale.publicvm.com';
   const API_KEY = process.env.HEADSCALE_API_KEY || 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
 
-  console.log(`Proxying ${request.method} request to: ${HEADSCALE_URL}/api/v1/${path}`);
+  console.log(`🔗 Proxying ${request.method} request to: ${HEADSCALE_URL}/api/v1/${path}`);
 
   try {
     const url = `${HEADSCALE_URL}/api/v1/${path}`;
@@ -32,40 +32,53 @@ export default async function handler(request, response) {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: request.method !== 'GET' && request.method !== 'DELETE' ? JSON.stringify(request.body) : undefined,
     });
 
-    console.log(`Headscale API response status: ${apiResponse.status}`);
+    console.log(`📡 Headscale API response status: ${apiResponse.status}`);
+
+    // Handle different response types
+    const contentType = apiResponse.headers.get('content-type');
+    
+    if (apiResponse.status === 204) {
+      // No content response
+      response.status(204).end();
+      return;
+    }
 
     if (!apiResponse.ok) {
-      const errorText = await apiResponse.text();
-      console.error(`Headscale API error ${apiResponse.status}:`, errorText);
+      let errorData;
+      if (contentType && contentType.includes('application/json')) {
+        errorData = await apiResponse.json();
+      } else {
+        errorData = await apiResponse.text();
+      }
       
-      // Return proper error response
+      console.error(`❌ Headscale API error ${apiResponse.status}:`, errorData);
+      
       response.status(apiResponse.status).json({ 
         error: true,
-        message: errorText,
-        status: apiResponse.status
+        status: apiResponse.status,
+        message: errorData.message || errorData || 'API request failed'
       });
       return;
     }
 
-    // Try to parse JSON response
-    try {
+    // Successful response
+    if (contentType && contentType.includes('application/json')) {
       const data = await apiResponse.json();
       response.status(200).json(data);
-    } catch (parseError) {
-      // If no JSON content, return success
-      response.status(200).json({ success: true });
+    } else {
+      const text = await apiResponse.text();
+      response.status(200).json({ message: text });
     }
     
   } catch (error) {
-    console.error('Proxy error:', error);
+    console.error('💥 Proxy error:', error);
     
     // Return structured error response
     response.status(500).json({ 
       error: true,
-      message: 'Internal server error',
+      message: 'Internal server error - Cannot connect to Headscale server',
       details: error.message
     });
   }
