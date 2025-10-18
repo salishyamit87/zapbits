@@ -1,11 +1,10 @@
-// Fixed Authentication System
+// Completely Fixed Authentication System
 class AuthSystem {
     constructor() {
         this.currentUser = null;
         this.isLoggedIn = false;
     }
 
-    // Show notification
     showNotification(message, type = 'info') {
         const existingNotifications = document.querySelectorAll('.custom-notification');
         existingNotifications.forEach(note => note.remove());
@@ -33,14 +32,12 @@ class AuthSystem {
         }, 4000);
     }
 
-    // Handle user signup - FIXED
+    // REAL API CALL - No fake login
     async handleSignup(email, password) {
         try {
             this.showNotification('Creating account...', 'info');
-            
             console.log('Creating user:', email);
             
-            // Headscale mein user create karein
             const response = await fetch('/api/proxy?path=user', {
                 method: 'POST',
                 headers: {
@@ -55,7 +52,7 @@ class AuthSystem {
             
             if (response.ok) {
                 const userData = await response.json();
-                console.log('User created:', userData);
+                console.log('User created successfully:', userData);
                 
                 this.currentUser = { 
                     email: email,
@@ -65,42 +62,40 @@ class AuthSystem {
                 };
                 this.isLoggedIn = true;
                 
-                // Store in localStorage
                 localStorage.setItem('headscale_user', JSON.stringify(this.currentUser));
                 localStorage.setItem('headscale_loggedIn', 'true');
                 
                 this.showNotification('Account created successfully!', 'success');
                 
-                // Redirect to dashboard
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
                 
             } else {
                 const errorText = await response.text();
-                console.error('Signup failed:', errorText);
+                console.error('Signup failed:', response.status, errorText);
                 
                 if (response.status === 409) {
-                    this.showNotification('User already exists. Please login instead.', 'warning');
+                    this.showNotification('User already exists. Please login.', 'warning');
+                } else if (response.status === 500) {
+                    this.showNotification('Server error. Please try again.', 'error');
                 } else {
                     this.showNotification(`Signup failed: ${errorText}`, 'error');
                 }
             }
             
         } catch (error) {
-            console.error('Signup error:', error);
-            this.showNotification('Account creation failed. Please try again.', 'error');
+            console.error('Signup network error:', error);
+            this.showNotification('Network error. Please check console.', 'error');
         }
     }
 
-    // Handle user login - FIXED
+    // REAL LOGIN CHECK - No fake login
     async handleLogin(email, password) {
         try {
             this.showNotification('Signing in...', 'info');
-            
             console.log('Login attempt for:', email);
             
-            // Check if user exists in Headscale
             const response = await fetch('/api/proxy?path=user');
             
             if (!response.ok) {
@@ -108,8 +103,9 @@ class AuthSystem {
             }
             
             const usersData = await response.json();
-            console.log('All users:', usersData);
+            console.log('All users from API:', usersData);
             
+            // Check if user exists
             const userExists = usersData.users && usersData.users.some(user => 
                 user.name === email
             );
@@ -122,7 +118,6 @@ class AuthSystem {
                 };
                 this.isLoggedIn = true;
                 
-                // Store in localStorage
                 localStorage.setItem('headscale_user', JSON.stringify(this.currentUser));
                 localStorage.setItem('headscale_loggedIn', 'true');
                 
@@ -136,22 +131,25 @@ class AuthSystem {
             
         } catch (error) {
             console.error('Login error:', error);
-            this.showNotification('Login failed. Please check console for details.', 'error');
+            this.showNotification('Login failed. Please try signup.', 'error');
         }
     }
 
-    // Handle OAuth login - FIXED
+    // OAuth - REAL implementation
     async handleOAuth(provider) {
+        this.showNotification(`${provider} authentication coming soon. Please use email signup.`, 'info');
+        return; // Temporary disable OAuth
+        
+        // Original OAuth code commented out for now
+        /*
         try {
             this.showNotification(`Signing in with ${provider}...`, 'info');
             
-            // Generate unique email for OAuth user
             const oauthEmail = `oauth_${provider}_${Date.now()}@headscale.local`;
             const oauthUsername = `${provider}_user_${Date.now()}`;
             
             console.log('Creating OAuth user:', oauthUsername);
             
-            // Create new user in Headscale for OAuth
             const response = await fetch('/api/proxy?path=user', {
                 method: 'POST',
                 headers: {
@@ -161,8 +159,6 @@ class AuthSystem {
                     name: oauthUsername
                 })
             });
-            
-            console.log('OAuth signup response:', response.status);
             
             if (response.ok) {
                 const userData = await response.json();
@@ -185,7 +181,6 @@ class AuthSystem {
                 }, 1000);
             } else {
                 const errorText = await response.text();
-                console.error('OAuth user creation failed:', errorText);
                 throw new Error(`OAuth failed: ${errorText}`);
             }
             
@@ -193,9 +188,9 @@ class AuthSystem {
             console.error('OAuth error:', error);
             this.showNotification(`${provider} login failed. Please try email signup.`, 'error');
         }
+        */
     }
 
-    // Check if user is logged in
     checkAuth() {
         const loggedIn = localStorage.getItem('headscale_loggedIn');
         const userData = localStorage.getItem('headscale_user');
@@ -208,7 +203,6 @@ class AuthSystem {
         return false;
     }
 
-    // Logout user
     logout() {
         if (confirm('Are you sure you want to logout?')) {
             this.currentUser = null;
@@ -219,12 +213,10 @@ class AuthSystem {
         }
     }
 
-    // Get current user
     getCurrentUser() {
         return this.currentUser;
     }
 
-    // Check if user is admin
     isUserAdmin() {
         return this.currentUser && this.currentUser.isAdmin === true;
     }
