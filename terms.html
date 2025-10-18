@@ -3,93 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms & Conditions - ZapBits</title>
+    <title>Terms & Conditions - Headscale</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background: #f8fafc; color: #374151; }
         
-        .header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; max-width: 1200px; margin: 0 auto; }
-        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; text-decoration: none; }
+        /* Navigation */
+        .navbar { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 0; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #3b82f6; }
         .nav-links { display: flex; gap: 2rem; }
-        .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+        .nav-links a { text-decoration: none; color: #374151; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #3b82f6; }
         
-        .terms-container { max-width: 800px; margin: 100px auto 50px; padding: 0 5%; }
+        /* Terms Content */
+        .terms-container { max-width: 800px; margin: 2rem auto; padding: 0 2rem; }
         .terms-header { text-align: center; margin-bottom: 3rem; }
-        .terms-header h1 { color: #0066ff; margin-bottom: 1rem; }
+        .terms-header h1 { font-size: 2.5rem; color: #1f2937; margin-bottom: 1rem; }
+        .terms-header p { color: #6b7280; font-size: 1.1rem; }
         
-        .terms-content { background: #f8f9fa; padding: 2rem; border-radius: 10px; }
-        .section { margin-bottom: 2rem; }
-        .section h2 { color: #0066ff; margin-bottom: 1rem; font-size: 1.3rem; }
-        .section p { margin-bottom: 1rem; }
+        .terms-content { background: white; padding: 3rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        .footer { background: #333; color: white; text-align: center; padding: 2rem; margin-top: 4rem; }
+        .section { margin-bottom: 2.5rem; }
+        .section h2 { color: #3b82f6; margin-bottom: 1rem; font-size: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .section h3 { color: #1f2937; margin: 1.5rem 0 0.5rem 0; font-size: 1.2rem; }
+        .section p { margin-bottom: 1rem; text-align: justify; }
+        .section ul { margin: 1rem 0 1rem 2rem; }
+        .section li { margin-bottom: 0.5rem; }
+        
+        /* Footer */
+        .footer { background: #1f2937; color: white; padding: 3rem 0; text-align: center; margin-top: 4rem; }
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+        .footer-links a { color: #d1d5db; text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: white; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container { flex-direction: column; gap: 1rem; }
+            .terms-content { padding: 2rem 1.5rem; }
+            .terms-header h1 { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav">
-            <a href="index.html" class="logo">ZapBits</a>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Headscale</div>
             <div class="nav-links">
                 <a href="index.html">Home</a>
+                <a href="contact.html">Contact</a>
                 <a href="login.html">Login</a>
-                <a href="signup.html">Sign Up</a>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
+    <!-- Terms Content -->
     <div class="terms-container">
         <div class="terms-header">
             <h1>Terms & Conditions</h1>
-            <p>Last updated: December 2024</p>
+            <p>Last updated: October 18, 2024</p>
         </div>
-        
+
         <div class="terms-content">
             <div class="section">
                 <h2>1. Acceptance of Terms</h2>
-                <p>By accessing and using ZapBits services, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                <p>By accessing and using Headscale services, you accept and agree to be bound by the terms and provision of this agreement.</p>
             </div>
-            
+
             <div class="section">
-                <h2>2. Use of Service</h2>
-                <p>ZapBits provides secure mesh networking services. You agree to use the service only for lawful purposes and in accordance with these terms.</p>
+                <h2>2. Use License</h2>
+                <p>Permission is granted to temporarily use Headscale services for personal, non-commercial transitory viewing only.</p>
+                <h3>You must not:</h3>
+                <ul>
+                    <li>Modify or copy the materials</li>
+                    <li>Use the materials for any commercial purpose</li>
+                    <li>Attempt to reverse engineer any software contained</li>
+                    <li>Remove any copyright or other proprietary notations</li>
+                    <li>Transfer the materials to another person</li>
+                </ul>
             </div>
-            
+
             <div class="section">
                 <h2>3. Account Registration</h2>
-                <p>You must provide accurate and complete information when creating an account. You are responsible for maintaining the security of your account.</p>
+                <p>You must provide accurate and complete information when creating an account with Headscale.</p>
+                <p>You are responsible for safeguarding your account credentials and for all activities that occur under your account.</p>
             </div>
-            
+
             <div class="section">
-                <h2>4. Privacy</h2>
-                <p>Your privacy is important to us. We collect and use personal information as described in our Privacy Policy.</p>
+                <h2>4. Service Availability</h2>
+                <p>We strive to maintain 99.9% uptime but do not guarantee uninterrupted service. We may temporarily suspend access for maintenance, updates, or emergency repairs.</p>
             </div>
-            
+
             <div class="section">
-                <h2>5. Service Availability</h2>
-                <p>We strive to maintain high service availability but do not guarantee uninterrupted access. We may perform maintenance that temporarily affects service.</p>
+                <h2>5. User Responsibilities</h2>
+                <h3>You agree not to:</h3>
+                <ul>
+                    <li>Use the service for any illegal purpose</li>
+                    <li>Transmit viruses, malware, or other destructive code</li>
+                    <li>Interfere with or disrupt the service</li>
+                    <li>Attempt to gain unauthorized access to other networks</li>
+                    <li>Use the service to infringe upon others' rights</li>
+                </ul>
             </div>
-            
+
             <div class="section">
-                <h2>6. Limitation of Liability</h2>
-                <p>ZapBits shall not be liable for any indirect, incidental, special, consequential or punitive damages resulting from your use of the service.</p>
+                <h2>6. Data Privacy</h2>
+                <p>We collect and use personal information as described in our Privacy Policy. By using Headscale, you consent to such processing.</p>
+                <p>We implement security measures to protect your data but cannot guarantee absolute security.</p>
             </div>
-            
+
             <div class="section">
-                <h2>7. Changes to Terms</h2>
-                <p>We reserve the right to modify these terms at any time. We will notify users of significant changes through our website or email.</p>
+                <h2>7. Intellectual Property</h2>
+                <p>The Headscale name, logo, and all related names, logos, product and service names, designs, and slogans are trademarks of Headscale or its affiliates.</p>
+                <p>All content included on this service is the property of Headscale or its content suppliers and protected by copyright laws.</p>
             </div>
-            
+
             <div class="section">
-                <h2>8. Contact Information</h2>
-                <p>For questions about these Terms & Conditions, please contact us at legal@zapbits.com.</p>
+                <h2>8. Termination</h2>
+                <p>We may terminate or suspend your account immediately, without prior notice, for conduct that we believe violates these Terms or is harmful to other users.</p>
+            </div>
+
+            <div class="section">
+                <h2>9. Limitation of Liability</h2>
+                <p>Headscale shall not be held liable for any indirect, incidental, special, consequential or punitive damages resulting from your use or inability to use the service.</p>
+            </div>
+
+            <div class="section">
+                <h2>10. Changes to Terms</h2>
+                <p>We reserve the right to modify these terms at any time. We will notify users of any material changes via email or through the service.</p>
+                <p>Continued use of the service after changes constitutes acceptance of the new terms.</p>
+            </div>
+
+            <div class="section">
+                <h2>11. Governing Law</h2>
+                <p>These terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
+            </div>
+
+            <div class="section">
+                <h2>12. Contact Information</h2>
+                <p>If you have any questions about these Terms, please contact us at:</p>
+                <p><strong>Email:</strong> legal@headscale.example.com</p>
+                <p><strong>Address:</strong> 123 Tech Street, San Francisco, CA 94105</p>
             </div>
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024 ZapBits.com. All rights reserved.</p>
-        <p><a href="terms.html" style="color: #00ccff;">Terms & Conditions</a> | <a href="contact.html" style="color: #00ccff;">Contact Us</a></p>
+        <div class="container">
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="contact.html">Contact Us</a>
+                <a href="terms.html">Terms & Conditions</a>
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+            <p>&copy; 2024 Headscale. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 </html>
