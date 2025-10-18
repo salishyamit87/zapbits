@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ZapBits</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .logo { text-align: center; color: #0066ff; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; }
+        .social-buttons { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
+        .social-btn { padding: 12px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; }
+        .social-btn:hover { background: #f9f9f9; }
+        .divider { text-align: center; margin: 1.5rem 0; color: #666; position: relative; }
+        .divider::before { content: ''; position: absolute; left: 0; top: 50%; width: 45%; height: 1px; background: #ddd; }
+        .divider::after { content: ''; position: absolute; right: 0; top: 50%; width: 45%; height: 1px; background: #ddd; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .submit-btn { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .submit-btn:hover { background: #0052cc; }
+        .signup-link { text-align: center; margin-top: 1.5rem; }
+        .signup-link a { color: #0066ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">ZapBits</div>
+        
+        <div class="social-buttons">
+            <button class="social-btn" onclick="loginWithGoogle()">
+                <span>Continue with Google</span>
+            </button>
+            <button class="social-btn" onclick="loginWithGitHub()">
+                <span>Continue with GitHub</span>
+            </button>
+            <button class="social-btn" onclick="loginWithMicrosoft()">
+                <span>Continue with Microsoft</span>
+            </button>
+        </div>
+        
+        <div class="divider">or</div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" placeholder="Email address" required>
+            </div>
+            <div class="form-group">
+                <input type="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+        
+        <div class="signup-link">
+            Don't have an account? <a href="signup.html">Sign up</a>
+        </div>
+    </div>
+
+    <script>
+        function loginWithGoogle() {
+            alert('Google Login - Headscale API Integration Ready');
+        }
+        
+        function loginWithGitHub() {
+            alert('GitHub Login - Headscale API Integration Ready');
+        }
+        
+        function loginWithMicrosoft() {
+            alert('Microsoft Login - Headscale API Integration Ready');
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Email Login - Headscale Authentication Ready');
+            // Headscale API integration will be added here
+        });
+    </script>
+</body>
+</html>
