@@ -1,9 +1,14 @@
-// Complete Headscale API Integration
+// Enhanced Headscale API with User Isolation
 class HeadscaleAPI {
     constructor() {
         this.baseURL = '';
-        this.apiKey = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
+        this.adminApiKey = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
         this.useProxy = true;
+        this.currentUser = null;
+    }
+
+    setCurrentUser(user) {
+        this.currentUser = user;
     }
 
     async makeRequest(endpoint, method = 'GET', data = null) {
@@ -15,9 +20,11 @@ class HeadscaleAPI {
 
             if (this.useProxy) {
                 url = `/api/proxy?path=${endpoint.replace(/^\//, '')}`;
+                // Always use admin API key for proxy
+                headers['X-Admin-Key'] = this.adminApiKey;
             } else {
                 url = `https://headscale.publicvm.com/api/v1${endpoint}`;
-                headers['Authorization'] = `Bearer ${this.apiKey}`;
+                headers['Authorization'] = `Bearer ${this.adminApiKey}`;
             }
 
             const options = {
@@ -58,42 +65,120 @@ class HeadscaleAPI {
         return await this.makeRequest(`/user/${username}`, 'DELETE');
     }
 
-    // Node Management
+    // Node Management - USER SPECIFIC
     async listNodes() {
-        return await this.makeRequest('/node');
+        const allNodes = await this.makeRequest('/node');
+        
+        if (!this.currentUser) {
+            return { nodes: [] };
+        }
+
+        // Filter nodes for current user only
+        const userNodes = allNodes.nodes ? allNodes.nodes.filter(node => {
+            // Check if node belongs to current user
+            // This is a simple filter - in real scenario, you'd have proper user-node mapping
+            return node.user && node.user.name === this.currentUser.username;
+        }) : [];
+
+        return { nodes: userNodes };
     }
 
     async getNode(nodeId) {
-        return await this.makeRequest(`/node/${nodeId}`);
+        const node = await this.makeRequest(`/node/${nodeId}`);
+        
+        // Check if node belongs to current user
+        if (this.currentUser && node.user && node.user.name === this.currentUser.username) {
+            return node;
+        } else {
+            throw new Error('Access denied');
+        }
     }
 
     async deleteNode(nodeId) {
+        // First verify node belongs to user
+        const node = await this.getNode(nodeId);
         return await this.makeRequest(`/node/${nodeId}`, 'DELETE');
     }
 
     async expireNode(nodeId) {
+        // First verify node belongs to user
+        const node = await this.getNode(nodeId);
         return await this.makeRequest(`/node/${nodeId}/expire`, 'POST');
     }
 
     async renameNode(nodeId, newName) {
+        // First verify node belongs to user
+        const node = await this.getNode(nodeId);
         return await this.makeRequest(`/node/${nodeId}/rename`, 'POST', { name: newName });
     }
 
-    // Route Management
+    // Route Management - USER SPECIFIC
     async listRoutes() {
-        return await this.makeRequest('/routes');
+        const allRoutes = await this.makeRequest('/routes');
+        
+        if (!this.currentUser) {
+            return { routes: [] };
+        }
+
+        // Filter routes for current user's nodes only
+        const userRoutes = allRoutes.routes ? allRoutes.routes.filter(route => {
+            return route.node && route.node.user && route.node.user.name === this.currentUser.username;
+        }) : [];
+
+        return { routes: userRoutes };
     }
 
     async enableRoute(routeId) {
+        // First verify route belongs to user's node
+        const allRoutes = await this.listRoutes();
+        const userRoute = allRoutes.routes.find(route => route.id === routeId);
+        
+        if (!userRoute) {
+            throw new Error('Access denied');
+        }
+        
         return await this.makeRequest(`/routes/${routeId}/enable`, 'POST');
     }
 
     async disableRoute(routeId) {
+        // First verify route belongs to user's node
+        const allRoutes = await this.listRoutes();
+        const userRoute = allRoutes.routes.find(route => route.id === routeId);
+        
+        if (!userRoute) {
+            throw new Error('Access denied');
+        }
+        
         return await this.makeRequest(`/routes/${routeId}/disable`, 'POST');
     }
 
     async deleteRoute(routeId) {
+        // First verify route belongs to user's node
+        const allRoutes = await this.listRoutes();
+        const userRoute = allRoutes.routes.find(route => route.id === routeId);
+        
+        if (!userRoute) {
+            throw new Error('Access denied');
+        }
+        
         return await this.makeRequest(`/routes/${routeId}`, 'DELETE');
+    }
+
+    // Pre-auth Keys - FOR USER DEPLOYMENT
+    async createPreAuthKey(user, reusable = true, ephemeral = false, expiration = '24h') {
+        return await this.makeRequest(`/user/${user}/preauthkey`, 'POST', {
+            reusable: reusable,
+            ephemeral: ephemeral,
+            expiration: expiration
+        });
+    }
+
+    async listPreAuthKeys(user) {
+        return await this.makeRequest(`/user/${user}/preauthkey`);
+    }
+
+    async expirePreAuthKey(user, key) {
+        return await this.makeRequest(`/user/${user}/preauthkey/${key}`, 'POST');
     }
 
     // API Key Management
@@ -108,15 +193,6 @@ class HeadscaleAPI {
     async expireApiKey(prefix) {
         return await this.makeRequest(`/apikey/${prefix}`, 'DELETE');
     }
-
-    // ACL Management
-    async getACLs() {
-        return await this.makeRequest('/acl');
-    }
-
-    async updateACLs(aclConfig) {
-        return await this.makeRequest('/acl', 'POST', aclConfig);
-    }
 }
 
 // Utility Functions
@@ -125,7 +201,18 @@ const HeadscaleUI = {
         if (!dateString) return 'Never';
         try {
             const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString();
         } catch (e) {
             return 'Invalid Date';
         }
@@ -171,7 +258,6 @@ const HeadscaleUI = {
     },
 
     createModal(title, content, buttons = []) {
-        // Remove existing modal
         const existingModal = document.querySelector('.modal-overlay');
         if (existingModal) existingModal.remove();
 
