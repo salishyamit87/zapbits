@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ZapBits</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        
+        .header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; text-decoration: none; }
+        .user-menu { display: flex; align-items: center; gap: 1rem; }
+        .logout-btn { background: #ff4444; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
+        
+        .dashboard { max-width: 1200px; margin: 80px auto 20px; padding: 0 5%; }
+        .welcome { background: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #0066ff; }
+        .stat-label { color: #666; font-size: 0.9rem; }
+        
+        .nodes-section { background: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section-header { display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem; }
+        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .node-card { border: 1px solid #e0e0e0; padding: 1.5rem; border-radius: 8px; background: #fafafa; }
+        .node-online { border-left: 4px solid #00cc00; }
+        .node-offline { border-left: 4px solid #ff4444; }
+        .node-header { display: flex; justify-content: between; align-items: center; margin-bottom: 1rem; }
+        .node-name { font-weight: bold; font-size: 1.1rem; }
+        .node-status { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .status-online { background: #e8f5e8; color: #00cc00; }
+        .status-offline { background: #ffe8e8; color: #ff4444; }
+        .node-details p { margin: 0.5rem 0; color: #555; }
+        
+        .add-node-btn { background: #0066ff; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; margin-top: 1rem; }
+        .add-node-btn:hover { background: #0052cc; }
+        
+        .loading { text-align: center; padding: 2rem; color: #666; }
+        .error-message { background: #ffe8e8; color: #ff4444; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        .success-message { background: #e8f5e8; color: #00cc00; padding: 1rem; border-radius: 5px; margin: 1rem 0; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
+        .modal-content { background: white; margin: 10% auto; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px; }
+        .modal-header { display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .submit-btn { background: #0066ff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">ZapBits</a>
+            <div class="user-menu">
+                <span>Welcome, <strong id="username">User</strong></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="dashboard">
+        <div class="welcome">
+            <h1>Your Network Dashboard</h1>
+            <p>Manage your devices and network settings securely</p>
+        </div>
+        
+        <!-- Stats Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalNodes">0</div>
+                <div class="stat-label">Total Nodes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="onlineNodes">0</div>
+                <div class="stat-label">Online Nodes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalRoutes">0</div>
+                <div class="stat-label">Active Routes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="userSince">1</div>
+                <div class="stat-label">Days Active</div>
+            </div>
+        </div>
+        
+        <!-- Nodes Section -->
+        <div class="nodes-section">
+            <div class="section-header">
+                <h2>Your Devices</h2>
+                <button class="add-node-btn" onclick="showAddNodeModal()">+ Add New Device</button>
+            </div>
+            
+            <div id="loadingMessage" class="loading">
+                <p>🔄 Loading your devices...</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            
+            <div class="nodes-grid" id="nodesList">
+                <!-- Nodes will be loaded here dynamically -->
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="nodes-section">
+            <h2>Quick Actions</h2>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button class="add-node-btn" onclick="generateAuthKey()">Generate Auth Key</button>
+                <button class="add-node-btn" style="background: #00cc00;" onclick="viewRoutes()">View Routes</button>
+                <button class="add-node-btn" style="background: #ff9900;" onclick="viewACLs()">ACL Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Node Modal -->
+    <div id="addNodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Device</h3>
+                <button class="close-modal" onclick="hideAddNodeModal()">&times;</button>
+            </div>
+            <form id="addNodeForm">
+                <div class="form-group">
+                    <label for="nodeName">Device Name</label>
+                    <input type="text" id="nodeName" placeholder="e.g., My Laptop, Office PC" required>
+                </div>
+                <div class="form-group">
+                    <label for="nodeType">Device Type</label>
+                    <input type="text" id="nodeType" placeholder="e.g., Laptop, Server, Mobile" required>
+                </div>
+                <button type="submit" class="submit-btn">Add Device</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Netlify Functions URLs
+        const NETLIFY_FUNCTIONS_URL = '/.netlify/functions';
+        
+        // Check if user is logged in
+        function checkAuth() {
+            const user = localStorage.getItem('zapbits_user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return JSON.parse(user);
+        }
+        
+        // Load user data from Netlify functions
+        async function loadUserData() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            document.getElementById('username').textContent = user.name || user.email;
+            
+            try {
+                showLoading(true);
+                
+                // Call Netlify function to get nodes
+                const response = await fetch(`${NETLIFY_FUNCTIONS_URL}/get-nodes`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayNodes(result.nodes);
+                    showSuccess('Data loaded successfully from secure API!');
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Failed to load devices. Using demo data.');
+                displayDemoData();
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display nodes in the UI
+        function displayNodes(nodes) {
+            const nodesList = document.getElementById('nodesList');
+            
+            if (!nodes || nodes.length === 0) {
+                nodesList.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">
+                        <p>No devices found. Add your first device to get started!</p>
+                    </div>
+                `;
+                updateStats(0, 0, 0);
+                return;
+            }
+            
+            const onlineCount = nodes.filter(node => node.online).length;
+            updateStats(nodes.length, onlineCount, 5); // Assuming 5 routes for demo
+            
+            nodesList.innerHTML = nodes.map(node => `
+                <div class="node-card ${node.online ? 'node-online' : 'node-offline'}">
+                    <div class="node-header">
+                        <div class="node-name">${node.name}</div>
+                        <div class="node-status ${node.online ? 'status-online' : 'status-offline'}">
+                            ${node.online ? '🟢 ONLINE' : '🔴 OFFLINE'}
+                        </div>
+                    </div>
+                    <div class="node-details">
+                        <p><strong>IP Address:</strong> ${node.ip}</p>
+                        <p><strong>Last Seen:</strong> ${formatLastSeen(node.lastSeen)}</p>
+                        <p><strong>ID:</strong> ${node.id}</p>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button onclick="manageNode(${node.id})" style="background: #0066ff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Manage</button>
+                        <button onclick="removeNode(${node.id})" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Demo data fallback
+        function displayDemoData() {
+            const demoNodes = [
+                { 
+                    id: 1, 
+                    name: 'My Laptop', 
+                    ip: '100.64.0.1', 
+                    online: true, 
+                    lastSeen: new Date().toISOString() 
+                },
+                { 
+                    id: 2, 
+                    name: 'Office PC', 
+                    ip: '100.64.0.2', 
+                    online: true, 
+                    lastSeen: new Date().toISOString() 
+                },
+                { 
+                    id: 3, 
+                    name: 'Home Server', 
+                    ip: '100.64.0.3', 
+                    online: false, 
+                    lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() 
+                }
+            ];
+            
+            displayNodes(demoNodes);
+        }
+        
+        // Update stats counters
+        function updateStats(total, online, routes) {
+            document.getElementById('totalNodes').textContent = total;
+            document.getElementById('onlineNodes').textContent = online;
+            document.getElementById('totalRoutes').textContent = routes;
+            document.getElementById('userSince').textContent = '1';
+        }
+        
+        // Format last seen time
+        function formatLastSeen(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minutes ago`;
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            return date.toLocaleDateString();
+        }
+        
+        // Modal functions
+        function showAddNodeModal() {
+            document.getElementById('addNodeModal').style.display = 'block';
+        }
+        
+        function hideAddNodeModal() {
+            document.getElementById('addNodeModal').style.display = 'none';
+            document.getElementById('addNodeForm').reset();
+        }
+        
+        // Add new node
+        document.getElementById('addNodeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nodeName = document.getElementById('nodeName').value;
+            const nodeType = document.getElementById('nodeType').value;
+            
+            // For now, just show success message
+            showSuccess(`Device "${nodeName}" added successfully! (Simulation)`);
+            hideAddNodeModal();
+            
+            // In future, this will call Netlify function to create real node
+        });
+        
+        // Node management functions
+        function manageNode(nodeId) {
+            alert(`Manage Node ${nodeId} - This will open node management interface`);
+        }
+        
+        function removeNode(nodeId) {
+            if (confirm('Are you sure you want to remove this device?')) {
+                showSuccess(`Device ${nodeId} removed successfully! (Simulation)`);
+                // Reload data
+                setTimeout(loadUserData, 1000);
+            }
+        }
+        
+        // Quick action functions
+        function generateAuthKey() {
+            alert('Auth Key Generation - This will generate real Headscale authentication key');
+        }
+        
+        function viewRoutes() {
+            alert('Routes Management - This will show all active routes in your network');
+        }
+        
+        function viewACLs() {
+            alert('ACL Settings - This will open Access Control List management');
+        }
+        
+        // UI helper functions
+        function showLoading(show) {
+            document.getElementById('loadingMessage').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+        
+        function showSuccess(message) {
+            // Create temporary success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.querySelector('.dashboard').prepend(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+        
+        function logout() {
+            localStorage.removeItem('zapbits_user');
+            window.location.href = 'index.html';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('addNodeModal');
+            if (event.target === modal) {
+                hideAddNodeModal();
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+        });
+    </script>
+</body>
+</html>
