@@ -3,8 +3,8 @@ const fetch = require('node-fetch');
 exports.handler = async function(event, context) {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS'
     };
 
     if (event.httpMethod === 'OPTIONS') {
@@ -20,8 +20,6 @@ exports.handler = async function(event, context) {
         const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
         const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
         
-        console.log('Fetching user:', username);
-        
         // Get user from Headscale
         const headscaleResponse = await fetch(`${HEADSCALE_API}/user/${username}`, {
             method: 'GET',
@@ -32,8 +30,6 @@ exports.handler = async function(event, context) {
         
         if (headscaleResponse.ok) {
             const userData = await headscaleResponse.json();
-            console.log('User found:', userData);
-            
             return {
                 statusCode: 200,
                 headers,
@@ -53,19 +49,16 @@ exports.handler = async function(event, context) {
             };
         } else {
             const errorText = await headscaleResponse.text();
-            console.error('Headscale error:', errorText);
-            
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
                     success: false, 
-                    message: `Headscale API error: ${headscaleResponse.status} - ${errorText}` 
+                    message: `Headscale error: ${errorText}` 
                 })
             };
         }
     } catch (error) {
-        console.error('Server error:', error);
         return {
             statusCode: 500,
             headers,
