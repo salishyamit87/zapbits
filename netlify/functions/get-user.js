@@ -1,0 +1,78 @@
+const fetch = require('node-fetch');
+
+exports.handler = async function(event, context) {
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    };
+
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers, body: '' };
+    }
+
+    if (event.httpMethod !== 'GET') {
+        return { statusCode: 405, headers, body: 'Method Not Allowed' };
+    }
+    
+    try {
+        const { username } = event.queryStringParameters;
+        const HEADSCALE_API = 'https://headscale.publicvm.com/api/v1';
+        const API_KEY = 'Gib3hJr.WbZDm1n3YvRFU2T6uLStRteWmp4Wh4J2';
+        
+        console.log('Fetching user:', username);
+        
+        // Get user from Headscale
+        const headscaleResponse = await fetch(`${HEADSCALE_API}/user/${username}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`
+            }
+        });
+        
+        if (headscaleResponse.ok) {
+            const userData = await headscaleResponse.json();
+            console.log('User found:', userData);
+            
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ 
+                    success: true, 
+                    user: userData
+                })
+            };
+        } else if (headscaleResponse.status === 404) {
+            return {
+                statusCode: 404,
+                headers,
+                body: JSON.stringify({ 
+                    success: false, 
+                    message: 'User not found. Please sign up first.' 
+                })
+            };
+        } else {
+            const errorText = await headscaleResponse.text();
+            console.error('Headscale error:', errorText);
+            
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ 
+                    success: false, 
+                    message: `Headscale API error: ${headscaleResponse.status} - ${errorText}` 
+                })
+            };
+        }
+    } catch (error) {
+        console.error('Server error:', error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Server error: ' + error.message 
+            })
+        };
+    }
+};
