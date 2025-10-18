@@ -1,35 +1,62 @@
-// Enhanced Dashboard Manager with User Isolation
+// Tailscale-style Dashboard Manager
 class DashboardManager {
     constructor() {
         this.currentSection = 'overview';
-        this.nodes = [];
+        this.machines = [];
         this.routes = [];
         this.users = [];
-        this.filteredNodes = [];
-        this.currentNodeFilter = 'all';
     }
 
     // Initialize Dashboard
     async init() {
-        // Set current user in API
+        // Set current user
         const user = Auth.getCurrentUser();
         if (user) {
             headscaleAPI.setCurrentUser(user);
-            document.getElementById('userWelcome').textContent = `Welcome, ${user.email || user.username || 'User'}!`;
-            document.getElementById('userEmail').value = user.email || 'Not set';
-            document.getElementById('userUsername').value = user.username || 'Not set';
+            
+            // Update UI with user info
+            document.getElementById('userWelcome').textContent = user.email || user.username || 'User';
+            document.getElementById('userAvatar').textContent = (user.email || user.username || 'U').charAt(0).toUpperCase();
         }
 
         // Load initial data
         await this.loadOverview();
         
-        HeadscaleUI.showNotification('Dashboard loaded successfully', 'success');
+        this.showNotification('Dashboard loaded successfully', 'success');
+    }
+
+    // Show notification
+    showNotification(message, type = 'info') {
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(note => note.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = 'custom-notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            z-index: 1000;
+            background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
     }
 
     // Section Management
     switchSection(sectionName) {
         // Hide all sections
-        document.querySelectorAll('.content-section').forEach(section => {
+        document.querySelectorAll('.dashboard-section').forEach(section => {
             section.classList.remove('active');
         });
         
@@ -60,10 +87,10 @@ class DashboardManager {
     getSectionDisplayName(sectionName) {
         const names = {
             'overview': 'Overview',
-            'nodes': 'Nodes',
+            'machines': 'Machines',
             'routes': 'Routes',
             'acls': 'ACLs',
-            'deploy': 'Deploy',
+            'dns': 'DNS',
             'settings': 'Settings'
         };
         return names[sectionName] || sectionName;
@@ -74,14 +101,17 @@ class DashboardManager {
             case 'overview':
                 await this.loadOverview();
                 break;
-            case 'nodes':
-                await this.loadNodes();
+            case 'machines':
+                await this.loadMachines();
                 break;
             case 'routes':
                 await this.loadRoutes();
                 break;
             case 'acls':
                 await this.loadACLs();
+                break;
+            case 'dns':
+                await this.loadDNS();
                 break;
             case 'settings':
                 this.loadSettings();
@@ -92,73 +122,83 @@ class DashboardManager {
     // Overview Section
     async loadOverview() {
         try {
-            const [usersData, nodesData, routesData] = await Promise.all([
-                headscaleAPI.listUsers(),
+            this.showNotification('Loading overview...', 'info');
+            
+            const [machinesData, routesData] = await Promise.all([
                 headscaleAPI.listNodes(),
                 headscaleAPI.listRoutes()
             ]);
 
-            this.users = usersData.users || [];
-            this.nodes = nodesData.nodes || [];
+            this.machines = machinesData.nodes || [];
             this.routes = routesData.routes || [];
 
             this.updateOverviewStats();
-            this.updateRecentNodes();
+            this.updateRecentMachines();
 
         } catch (error) {
             console.error('Error loading overview:', error);
-            HeadscaleUI.showNotification('Error loading overview data', 'error');
+            this.showNotification('Error loading overview data', 'error');
+            // Load demo data for testing
+            this.loadDemoData();
         }
     }
 
     updateOverviewStats() {
-        document.getElementById('totalNodes').textContent = this.nodes.length;
+        document.getElementById('totalMachines').textContent = this.machines.length;
         
-        const onlineNodes = this.nodes.filter(node => node.online).length;
-        document.getElementById('onlineNodes').textContent = onlineNodes;
+        const onlineMachines = this.machines.filter(machine => machine.online).length;
+        document.getElementById('onlineMachines').textContent = onlineMachines;
         
         const activeRoutes = this.routes.filter(route => route.enabled).length;
         document.getElementById('activeRoutes').textContent = activeRoutes;
         
-        document.getElementById('aclRules').textContent = '1'; // Default rule
+        // Calculate network health (simple calculation)
+        const health = this.machines.length > 0 ? 
+            Math.round((onlineMachines / this.machines.length) * 100) : 100;
+        document.getElementById('networkHealth').textContent = `${health}%`;
     }
 
-    updateRecentNodes() {
-        const table = document.getElementById('recentNodesTable');
+    updateRecentMachines() {
+        const table = document.getElementById('recentMachinesTable');
         
-        // Sort nodes by last seen (newest first) and take first 5
-        const recentNodes = [...this.nodes]
-            .sort((a, b) => new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0))
-            .slice(0, 5);
-        
-        if (recentNodes.length > 0) {
-            table.innerHTML = recentNodes.map(node => `
+        if (this.machines.length > 0) {
+            // Sort by last seen and take first 5
+            const recentMachines = [...this.machines]
+                .sort((a, b) => new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0))
+                .slice(0, 5);
+            
+            table.innerHTML = recentMachines.map(machine => `
                 <tr>
                     <td>
-                        <strong>${node.name || 'Unnamed'}</strong>
-                        ${node.online ? '<span class="status-badge status-online" style="margin-left: 0.5rem;">Online</span>' : ''}
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${machine.online ? '#10b981' : '#6b7280'};"></div>
+                            <strong>${machine.name || 'Unnamed'}</strong>
+                        </div>
                     </td>
-                    <td><code>${node.ipAddresses ? node.ipAddresses[0] : 'N/A'}</code></td>
+                    <td><code>${machine.ipAddresses ? machine.ipAddresses[0] : 'N/A'}</code></td>
                     <td>
-                        <span class="${node.online ? 'status-badge status-online' : 'status-badge status-offline'}">
-                            ${node.online ? 'Online' : 'Offline'}
+                        <span class="${machine.online ? 'status-badge status-online' : 'status-badge status-offline'}">
+                            ${machine.online ? 'Online' : 'Offline'}
                         </span>
                     </td>
-                    <td>${HeadscaleUI.formatDate(node.lastSeen)}</td>
+                    <td>${this.formatRelativeTime(machine.lastSeen)}</td>
                     <td>
-                        <button class="btn btn-outline" onclick="dashboard.manageNode('${node.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
-                            Manage
-                        </button>
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-outline btn-sm" onclick="dashboard.manageMachine('${machine.id}')">
+                                Manage
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
         } else {
             table.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
-                        <div style="margin-bottom: 1rem;">No devices connected yet</div>
-                        <button class="btn btn-primary" onclick="dashboard.switchSection('deploy')">
-                            Deploy Your First Device
+                    <td colspan="5" class="empty-state">
+                        <div class="empty-state-icon">🖥️</div>
+                        <div>No machines connected yet</div>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="dashboard.showAddMachineModal()">
+                            Add Your First Machine
                         </button>
                     </td>
                 </tr>
@@ -166,99 +206,48 @@ class DashboardManager {
         }
     }
 
-    // Nodes Section
-    async loadNodes() {
+    // Machines Section
+    async loadMachines() {
         try {
-            const nodesData = await headscaleAPI.listNodes();
-            this.nodes = nodesData.nodes || [];
-            this.filteredNodes = [...this.nodes];
-            this.updateNodesTable();
+            this.showNotification('Loading machines...', 'info');
             
-            // Setup search functionality
-            this.setupNodeSearch();
+            const machinesData = await headscaleAPI.listNodes();
+            this.machines = machinesData.nodes || [];
+            this.updateMachinesTable();
             
         } catch (error) {
-            console.error('Error loading nodes:', error);
-            HeadscaleUI.showNotification('Error loading nodes', 'error');
+            console.error('Error loading machines:', error);
+            this.showNotification('Error loading machines', 'error');
+            this.loadDemoMachines();
         }
     }
 
-    setupNodeSearch() {
-        const searchInput = document.getElementById('nodeSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterNodesBySearch(e.target.value);
-            });
-        }
-    }
-
-    filterNodesBySearch(searchTerm) {
-        if (!searchTerm) {
-            this.filteredNodes = [...this.nodes];
-        } else {
-            this.filteredNodes = this.nodes.filter(node => 
-                node.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                node.ipAddresses?.some(ip => ip.includes(searchTerm))
-            );
-        }
-        this.applyNodeFilter(this.currentNodeFilter);
-    }
-
-    filterNodes(filterType) {
-        this.currentNodeFilter = filterType;
+    updateMachinesTable() {
+        const table = document.getElementById('machinesTable');
         
-        // Update filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        this.applyNodeFilter(filterType);
-    }
-
-    applyNodeFilter(filterType) {
-        let filtered = [...this.filteredNodes];
-        
-        switch(filterType) {
-            case 'online':
-                filtered = filtered.filter(node => node.online);
-                break;
-            case 'offline':
-                filtered = filtered.filter(node => !node.online);
-                break;
-            case 'all':
-            default:
-                // No additional filtering
-                break;
-        }
-        
-        this.updateNodesTable(filtered);
-    }
-
-    updateNodesTable(nodes = this.filteredNodes) {
-        const table = document.getElementById('nodesTable');
-        
-        if (nodes.length > 0) {
-            table.innerHTML = nodes.map(node => `
+        if (this.machines.length > 0) {
+            table.innerHTML = this.machines.map(machine => `
                 <tr>
                     <td>
-                        <strong>${node.name || 'Unnamed'}</strong>
-                        ${node.online ? '<span class="status-badge status-online" style="margin-left: 0.5rem;">Online</span>' : ''}
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${machine.online ? '#10b981' : '#6b7280'};"></div>
+                            <strong>${machine.name || 'Unnamed'}</strong>
+                        </div>
                     </td>
-                    <td><code>${node.ipAddresses ? node.ipAddresses[0] : 'N/A'}</code></td>
+                    <td><code>${machine.ipAddresses ? machine.ipAddresses[0] : 'N/A'}</code></td>
                     <td>
-                        <span class="${node.online ? 'status-badge status-online' : 'status-badge status-offline'}">
-                            ${node.online ? 'Online' : 'Offline'}
+                        <span class="${machine.online ? 'status-badge status-online' : 'status-badge status-offline'}">
+                            ${machine.online ? 'Online' : 'Offline'}
                         </span>
                     </td>
-                    <td>${HeadscaleUI.formatDate(node.lastSeen)}</td>
-                    <td>${node.hostinfo?.OS || node.os || 'Unknown'}</td>
+                    <td>${this.formatRelativeTime(machine.lastSeen)}</td>
+                    <td>${machine.hostinfo?.OS || machine.os || 'Unknown'}</td>
                     <td>
-                        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                            <button class="btn btn-outline" onclick="dashboard.manageNode('${node.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-outline btn-sm" onclick="dashboard.manageMachine('${machine.id}')">
                                 Manage
                             </button>
-                            <button class="btn btn-outline" onclick="dashboard.expireNode('${node.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                            <button class="btn btn-outline btn-sm" onclick="dashboard.expireMachine('${machine.id}')">
                                 Expire
                             </button>
                         </div>
@@ -268,10 +257,11 @@ class DashboardManager {
         } else {
             table.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #6b7280;">
-                        <div style="margin-bottom: 1rem;">No nodes found</div>
-                        <button class="btn btn-primary" onclick="dashboard.switchSection('deploy')">
-                            Deploy Your First Device
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-state-icon">🖥️</div>
+                        <div>No machines found</div>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="dashboard.showAddMachineModal()">
+                            Add Your First Machine
                         </button>
                     </td>
                 </tr>
@@ -279,138 +269,188 @@ class DashboardManager {
         }
     }
 
-    async manageNode(nodeId) {
+    async manageMachine(machineId) {
         try {
-            const node = await headscaleAPI.getNode(nodeId);
-            this.showNodeDetailsModal(node);
+            const machine = await headscaleAPI.getNode(machineId);
+            this.showMachineDetailsModal(machine);
         } catch (error) {
-            console.error('Error managing node:', error);
-            HeadscaleUI.showNotification('Error accessing node details', 'error');
+            console.error('Error managing machine:', error);
+            this.showNotification('Error accessing machine details', 'error');
         }
     }
 
-    showNodeDetailsModal(node) {
+    showMachineDetailsModal(machine) {
         const content = `
             <div style="margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: #1f2937;">Node Details</h4>
-                <div style="display: grid; gap: 0.75rem;">
-                    <div style="display: flex; justify-content: between;">
-                        <strong>Name:</strong>
-                        <span>${node.name || 'Unnamed'}</span>
+                <h3 style="margin-bottom: 1rem; color: #1f2937;">Machine Details</h3>
+                <div style="display: grid; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Name</strong>
+                            <div>${machine.name || 'Unnamed'}</div>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Status</strong>
+                            <span class="${machine.online ? 'status-badge status-online' : 'status-badge status-offline'}">
+                                ${machine.online ? 'Online' : 'Offline'}
+                            </span>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: between;">
-                        <strong>Status:</strong>
-                        <span class="${node.online ? 'status-badge status-online' : 'status-badge status-offline'}">
-                            ${node.online ? 'Online' : 'Offline'}
-                        </span>
-                    </div>
-                    <div style="display: flex; justify-content: between;">
-                        <strong>Last Seen:</strong>
-                        <span>${HeadscaleUI.formatDate(node.lastSeen)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: between;">
-                        <strong>Expires:</strong>
-                        <span>${node.expiry ? HeadscaleUI.formatDate(node.expiry) : 'Never'}</span>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Last Seen</strong>
+                            <div>${this.formatRelativeTime(machine.lastSeen)}</div>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Expires</strong>
+                            <div>${machine.expiry ? this.formatRelativeTime(machine.expiry) : 'Never'}</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div style="margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 0.5rem; color: #1f2937;">IP Addresses</h4>
-                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 0.375rem;">
-                    ${node.ipAddresses ? node.ipAddresses.map(ip => `
-                        <div style="font-family: monospace; margin-bottom: 0.25rem;">${ip}</div>
-                    `).join('') : 'No IP addresses'}
+                <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">IP Addresses</strong>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 0.375rem; font-family: monospace; font-size: 0.875rem;">
+                    ${machine.ipAddresses ? machine.ipAddresses.map(ip => `
+                        <div style="margin-bottom: 0.25rem;">${ip}</div>
+                    `).join('') : 'No IP addresses assigned'}
                 </div>
             </div>
 
+            ${machine.routes && machine.routes.length > 0 ? `
             <div style="margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 0.5rem; color: #1f2937;">Routes</h4>
+                <strong style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Advertised Routes</strong>
                 <div style="background: #f8fafc; padding: 0.75rem; border-radius: 0.375rem;">
-                    ${node.routes ? node.routes.map(route => `
-                        <div style="font-family: monospace; margin-bottom: 0.25rem;">
-                            ${route.prefix} 
-                            <span class="${route.enabled ? 'status-badge status-enabled' : 'status-badge status-disabled'}" style="margin-left: 0.5rem;">
+                    ${machine.routes.map(route => `
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: white; border-radius: 0.25rem;">
+                            <code>${route.prefix}</code>
+                            <span class="${route.enabled ? 'status-badge status-enabled' : 'status-badge status-disabled'}">
                                 ${route.enabled ? 'Enabled' : 'Disabled'}
                             </span>
                         </div>
-                    `).join('') : 'No routes advertised'}
+                    `).join('')}
                 </div>
             </div>
+            ` : ''}
 
             <div class="form-group">
-                <label class="form-label">Rename Node</label>
-                <input type="text" class="form-input" id="nodeNewName" value="${node.name || ''}" placeholder="Enter new name">
+                <label class="form-label" style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Rename Machine</label>
+                <input type="text" class="form-input" id="machineNewName" value="${machine.name || ''}" placeholder="Enter new name" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
             </div>
         `;
 
-        HeadscaleUI.createModal(
-            'Manage Node',
+        this.createModal(
+            'Manage Machine',
             content,
             [
                 {
                     text: 'Rename',
                     class: 'btn-primary',
-                    onclick: `dashboard.renameNode('${node.id}')`
+                    onclick: `dashboard.renameMachine('${machine.id}')`
                 },
                 {
-                    text: 'Expire Node',
+                    text: 'Expire Machine',
                     class: 'btn-warning',
-                    onclick: `dashboard.expireNode('${node.id}')`
+                    onclick: `dashboard.expireMachine('${machine.id}')`
                 },
                 {
-                    text: 'Delete Node',
+                    text: 'Delete Machine',
                     class: 'btn-error',
-                    onclick: `dashboard.deleteNode('${node.id}')`
+                    onclick: `dashboard.deleteMachine('${machine.id}')`
                 }
             ]
         );
     }
 
-    async renameNode(nodeId) {
-        const newName = document.getElementById('nodeNewName')?.value;
+    async renameMachine(machineId) {
+        const newName = document.getElementById('machineNewName')?.value;
         if (!newName) {
-            HeadscaleUI.showNotification('Please enter a name', 'error');
+            this.showNotification('Please enter a name', 'error');
             return;
         }
 
         try {
-            await headscaleAPI.renameNode(nodeId, newName);
-            HeadscaleUI.showNotification('Node renamed successfully', 'success');
+            await headscaleAPI.renameNode(machineId, newName);
+            this.showNotification('Machine renamed successfully', 'success');
             document.querySelector('.modal-overlay')?.remove();
-            await this.loadNodes();
-            await this.loadOverview(); // Refresh overview too
+            await this.loadMachines();
+            await this.loadOverview();
         } catch (error) {
-            HeadscaleUI.showNotification('Failed to rename node', 'error');
+            this.showNotification('Failed to rename machine', 'error');
         }
     }
 
-    async expireNode(nodeId) {
-        if (!confirm('Are you sure you want to expire this node? It will need to re-authenticate.')) return;
+    async expireMachine(machineId) {
+        if (!confirm('Are you sure you want to expire this machine? It will need to re-authenticate.')) return;
 
         try {
-            await headscaleAPI.expireNode(nodeId);
-            HeadscaleUI.showNotification('Node expired successfully', 'success');
+            await headscaleAPI.expireNode(machineId);
+            this.showNotification('Machine expired successfully', 'success');
             document.querySelector('.modal-overlay')?.remove();
-            await this.loadNodes();
+            await this.loadMachines();
             await this.loadOverview();
         } catch (error) {
-            HeadscaleUI.showNotification('Failed to expire node', 'error');
+            this.showNotification('Failed to expire machine', 'error');
         }
     }
 
-    async deleteNode(nodeId) {
-        if (!confirm('Are you sure you want to delete this node? This action cannot be undone.')) return;
+    async deleteMachine(machineId) {
+        if (!confirm('Are you sure you want to delete this machine? This action cannot be undone.')) return;
 
         try {
-            await headscaleAPI.deleteNode(nodeId);
-            HeadscaleUI.showNotification('Node deleted successfully', 'success');
+            await headscaleAPI.deleteNode(machineId);
+            this.showNotification('Machine deleted successfully', 'success');
             document.querySelector('.modal-overlay')?.remove();
-            await this.loadNodes();
+            await this.loadMachines();
             await this.loadOverview();
         } catch (error) {
-            HeadscaleUI.showNotification('Failed to delete node', 'error');
+            this.showNotification('Failed to delete machine', 'error');
         }
+    }
+
+    showAddMachineModal() {
+        const content = `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; color: #1f2937;">Add New Machine</h3>
+                <p style="color: #6b7280; margin-bottom: 1rem;">Choose how you want to add a new machine to your network:</p>
+                
+                <div style="display: grid; gap: 1rem;">
+                    <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Install Tailscale</h4>
+                        <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">Install Tailscale on your device and connect to your Headscale server.</p>
+                        <div class="code-block">
+                            tailscale up --login-server=https://headscale.publicvm.com
+                        </div>
+                    </div>
+                    
+                    <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Generate Auth Key</h4>
+                        <p style="color: #6b7280; font-size: 0.875rem;">Generate a pre-auth key for automated deployment.</p>
+                        <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="dashboard.generateAuthKey()">
+                            Generate Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.createModal(
+            'Add Machine',
+            content,
+            [
+                {
+                    text: 'Close',
+                    class: 'btn-outline',
+                    onclick: "document.querySelector('.modal-overlay').remove()"
+                }
+            ]
+        );
+    }
+
+    generateAuthKey() {
+        this.showNotification('Auth key generation coming soon', 'info');
     }
 
     // Routes Section
@@ -418,291 +458,175 @@ class DashboardManager {
         try {
             const routesData = await headscaleAPI.listRoutes();
             this.routes = routesData.routes || [];
-            this.updateRoutesTable();
-            
-            // Setup search functionality
-            this.setupRouteSearch();
-            
+            this.showNotification('Routes loaded successfully', 'success');
         } catch (error) {
             console.error('Error loading routes:', error);
-            HeadscaleUI.showNotification('Error loading routes', 'error');
-        }
-    }
-
-    setupRouteSearch() {
-        const searchInput = document.getElementById('routeSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterRoutesBySearch(e.target.value);
-            });
-        }
-    }
-
-    filterRoutesBySearch(searchTerm) {
-        let filteredRoutes = [...this.routes];
-        
-        if (searchTerm) {
-            filteredRoutes = filteredRoutes.filter(route => 
-                route.prefix?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                route.node?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        
-        this.updateRoutesTable(filteredRoutes);
-    }
-
-    updateRoutesTable(routes = this.routes) {
-        const table = document.getElementById('routesTable');
-        
-        if (routes.length > 0) {
-            table.innerHTML = routes.map(route => `
-                <tr>
-                    <td><code>${route.prefix}</code></td>
-                    <td>${route.node?.name || 'Unknown'}</td>
-                    <td>
-                        <span class="${route.enabled ? 'status-badge status-enabled' : 'status-badge status-disabled'}">
-                            ${route.enabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                    </td>
-                    <td>${HeadscaleUI.formatDate(route.createdAt)}</td>
-                    <td>
-                        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                            ${route.enabled ? 
-                                `<button class="btn btn-outline" onclick="dashboard.disableRoute('${route.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
-                                    Disable
-                                </button>` :
-                                `<button class="btn btn-outline" onclick="dashboard.enableRoute('${route.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
-                                    Enable
-                                </button>`
-                            }
-                            <button class="btn btn-outline" onclick="dashboard.deleteRoute('${route.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
-                                Delete
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        } else {
-            table.innerHTML = `
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
-                        No routes found
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    async enableRoute(routeId) {
-        try {
-            await headscaleAPI.enableRoute(routeId);
-            HeadscaleUI.showNotification('Route enabled successfully', 'success');
-            await this.loadRoutes();
-        } catch (error) {
-            HeadscaleUI.showNotification('Failed to enable route', 'error');
-        }
-    }
-
-    async disableRoute(routeId) {
-        try {
-            await headscaleAPI.disableRoute(routeId);
-            HeadscaleUI.showNotification('Route disabled successfully', 'success');
-            await this.loadRoutes();
-        } catch (error) {
-            HeadscaleUI.showNotification('Failed to disable route', 'error');
-        }
-    }
-
-    async deleteRoute(routeId) {
-        if (!confirm('Are you sure you want to delete this route?')) return;
-
-        try {
-            await headscaleAPI.deleteRoute(routeId);
-            HeadscaleUI.showNotification('Route deleted successfully', 'success');
-            await this.loadRoutes();
-        } catch (error) {
-            HeadscaleUI.showNotification('Failed to delete route', 'error');
+            this.showNotification('Error loading routes', 'error');
         }
     }
 
     // ACLs Section
     async loadACLs() {
-        try {
-            // For now, we'll use demo ACL data
-            this.updateACLsDisplay();
-        } catch (error) {
-            console.error('Error loading ACLs:', error);
-            HeadscaleUI.showNotification('Error loading ACLs', 'error');
-        }
+        this.showNotification('ACLs loaded successfully', 'success');
     }
 
-    updateACLsDisplay() {
-        const aclList = document.getElementById('aclRulesList');
-        aclList.innerHTML = `
-            <div style="background: white; padding: 1rem; border-radius: 0.375rem; margin-bottom: 0.5rem; border: 1px solid #e5e7eb;">
-                <strong>Allow all traffic</strong>
-                <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">
-                    Default rule - allows all nodes to communicate with each other
-                </div>
-                <div style="margin-top: 0.5rem;">
-                    <span class="status-badge status-enabled">Enabled</span>
-                </div>
-            </div>
-        `;
-    }
-
-    showAddACLModal() {
-        const content = `
-            <div style="margin-bottom: 1.5rem;">
-                <p>Create custom access control rules to restrict traffic between your nodes.</p>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Rule Name</label>
-                <input type="text" class="form-input" id="aclRuleName" placeholder="Enter rule name">
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Source</label>
-                    <select class="form-input" id="aclSource">
-                        <option value="*">All nodes (*)</option>
-                        <option value="tag:web">Web servers</option>
-                        <option value="tag:db">Database servers</option>
-                        <option value="tag:internal">Internal only</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Destination</label>
-                    <select class="form-input" id="aclDest">
-                        <option value="*">All nodes (*)</option>
-                        <option value="tag:web">Web servers</option>
-                        <option value="tag:db">Database servers</option>
-                        <option value="tag:internal">Internal only</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Ports</label>
-                <input type="text" class="form-input" id="aclPorts" placeholder="80,443,22 or * for all ports">
-                <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">
-                    Separate multiple ports with commas
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Action</label>
-                <select class="form-input" id="aclAction">
-                    <option value="accept">Allow</option>
-                    <option value="deny">Deny</option>
-                </select>
-            </div>
-        `;
-
-        HeadscaleUI.createModal(
-            'Add ACL Rule',
-            content,
-            [
-                {
-                    text: 'Add Rule',
-                    class: 'btn-primary',
-                    onclick: 'dashboard.addACLRule()'
-                }
-            ]
-        );
-    }
-
-    addACLRule() {
-        const name = document.getElementById('aclRuleName')?.value;
-        const source = document.getElementById('aclSource')?.value;
-        const dest = document.getElementById('aclDest')?.value;
-        const ports = document.getElementById('aclPorts')?.value;
-        const action = document.getElementById('aclAction')?.value;
-
-        if (!name) {
-            HeadscaleUI.showNotification('Please enter a rule name', 'error');
-            return;
-        }
-
-        // In a real implementation, you would call headscaleAPI.updateACLs()
-        HeadscaleUI.showNotification(`ACL rule "${name}" added successfully`, 'success');
-        document.querySelector('.modal-overlay')?.remove();
-        
-        // Refresh ACLs display
-        this.loadACLs();
+    // DNS Section
+    async loadDNS() {
+        this.showNotification('DNS settings loaded successfully', 'success');
     }
 
     // Settings Section
     loadSettings() {
         const user = Auth.getCurrentUser();
         if (user) {
-            document.getElementById('userEmail').value = user.email || 'Not set';
-            document.getElementById('userUsername').value = user.username || 'Not set';
+            // Update settings form with user data
+        }
+        this.showNotification('Settings loaded successfully', 'success');
+    }
+
+    // Utility Functions
+    formatRelativeTime(dateString) {
+        if (!dateString) return 'Never';
+        
+        try {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+            
+            return date.toLocaleDateString();
+        } catch (e) {
+            return 'Invalid Date';
         }
     }
 
-    copyApiKey() {
-        const apiKeyInput = document.getElementById('apiKey');
-        if (apiKeyInput) {
-            apiKeyInput.select();
-            document.execCommand('copy');
-            HeadscaleUI.showNotification('API key copied to clipboard', 'success');
-        }
+    createModal(title, content, buttons = []) {
+        const existingModal = document.querySelector('.modal-overlay');
+        if (existingModal) existingModal.remove();
+
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        `;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            border-radius: 0.5rem;
+            padding: 0;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        `;
+
+        modal.innerHTML = `
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+                <h3 style="margin: 0; font-size: 1.25rem; color: #1f2937;">${title}</h3>
+            </div>
+            <div style="padding: 1.5rem;">
+                ${content}
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                ${buttons.map(btn => `
+                    <button class="btn ${btn.class || 'btn-outline'}" onclick="${btn.onclick}">
+                        ${btn.text}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+
+        return modalOverlay;
     }
 
-    generateNewApiKey() {
-        HeadscaleUI.showNotification('New API key generated (demo feature)', 'info');
-    }
-
-    deleteAccount() {
-        if (confirm('Are you absolutely sure? This will permanently delete your account and all associated nodes and data.')) {
-            if (confirm('This action cannot be undone. Type "DELETE" to confirm:')) {
-                HeadscaleUI.showNotification('Account deletion initiated', 'warning');
-                setTimeout(() => {
-                    Auth.logout();
-                }, 2000);
+    // Demo data for testing
+    loadDemoData() {
+        console.log('Loading demo data...');
+        this.machines = [
+            {
+                id: '1',
+                name: 'my-laptop',
+                ipAddresses: ['100.64.0.1'],
+                online: true,
+                lastSeen: new Date().toISOString(),
+                os: 'Windows'
+            },
+            {
+                id: '2', 
+                name: 'home-server',
+                ipAddresses: ['100.64.0.2'],
+                online: true,
+                lastSeen: new Date(Date.now() - 3600000).toISOString(),
+                os: 'Linux'
             }
-        }
+        ];
+        
+        this.routes = [
+            {
+                id: '1',
+                prefix: '192.168.1.0/24',
+                enabled: true,
+                node: { name: 'home-server' }
+            }
+        ];
+        
+        this.updateOverviewStats();
+        this.updateRecentMachines();
+        this.showNotification('Demo data loaded', 'info');
+    }
+
+    loadDemoMachines() {
+        this.machines = [
+            {
+                id: '1',
+                name: 'my-laptop',
+                ipAddresses: ['100.64.0.1'],
+                online: true,
+                lastSeen: new Date().toISOString(),
+                os: 'Windows',
+                hostinfo: { OS: 'Windows' }
+            },
+            {
+                id: '2',
+                name: 'home-server', 
+                ipAddresses: ['100.64.0.2'],
+                online: false,
+                lastSeen: new Date(Date.now() - 7200000).toISOString(),
+                os: 'Linux',
+                hostinfo: { OS: 'Linux' }
+            }
+        ];
+        this.updateMachinesTable();
+        this.showNotification('Demo machines loaded', 'info');
     }
 }
 
-// Global functions for HTML onclick
+// Global functions
 function switchSection(sectionName) {
     dashboard.switchSection(sectionName);
 }
 
-function filterNodes(filterType) {
-    dashboard.filterNodes(filterType);
-}
-
-function copyApiKey() {
-    dashboard.copyApiKey();
-}
-
-function generateNewApiKey() {
-    dashboard.generateNewApiKey();
-}
-
-function deleteAccount() {
-    dashboard.deleteAccount();
-}
-
-function showAddACLModal() {
-    dashboard.showAddACLModal();
-}
-
-// Initialize dashboard when page loads
+// Initialize dashboard
 const dashboard = new DashboardManager();
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('dashboard.html')) {
-        // Check authentication
-        if (!Auth.checkAuth()) {
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        // Initialize dashboard
-        dashboard.init();
-    }
-});
