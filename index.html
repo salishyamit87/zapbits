@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapBits - Secure Mesh Networking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; }
+        
+        /* Header */
+        .header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #0066ff; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+        .nav-links a:hover { color: #0066ff; }
+        
+        /* Hero Section */
+        .hero { background: linear-gradient(135deg, #0066ff, #00ccff); color: white; padding: 120px 5% 80px; text-align: center; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; }
+        .cta-button { background: white; color: #0066ff; padding: 12px 30px; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
+        
+        /* Features */
+        .features { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .feature-card { background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center; }
+        .feature-card h3 { color: #0066ff; margin-bottom: 1rem; }
+        
+        /* Footer */
+        .footer { background: #333; color: white; text-align: center; padding: 2rem; margin-top: 4rem; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">ZapBits</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="login.html">Login</a>
+                <a href="signup.html" class="cta-button">Sign Up Free</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Secure Mesh Networking Made Simple</h1>
+        <p>Connect your devices securely with zero-config VPN. Built on Headscale for ultimate control.</p>
+        <a href="signup.html" class="cta-button">Get Started for Free</a>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <h2 style="text-align: center; margin-bottom: 1rem;">Why Choose ZapBits?</h2>
+        <p style="text-align: center; margin-bottom: 3rem;">Enterprise-grade security with simplicity</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🔒 Zero-Trust Security</h3>
+                <p>Every connection is authenticated and encrypted end-to-end</p>
+            </div>
+            <div class="feature-card">
+                <h3>🌐 Global Mesh Network</h3>
+                <p>Connect devices across any network seamlessly</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ Lightning Fast</h3>
+                <p>Direct peer-to-peer connections for maximum speed</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎯 Easy Management</h3>
+                <p>Simple dashboard to manage all your devices</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔧 Self-Hosted Option</h3>
+                <p>Full control with your own Headscale server</p>
+            </div>
+            <div class="feature-card">
+                <h3>💸 Completely Free</h3>
+                <p>No hidden costs, no limitations</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 ZapBits.com. All rights reserved.</p>
+        <p><a href="terms.html" style="color: #00ccff;">Terms & Conditions</a> | <a href="contact.html" style="color: #00ccff;">Contact Us</a></p>
+    </footer>
+</body>
+</html>
