@@ -1,0 +1,22 @@
+[build]
+  publish = "src"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headscale API proxy
+[[redirects]]
+  from = "/api/*"
+  to = "https://headscale.publicvm.com/:splat"
+  status = 200
+  force = true
+
+# Environment variables
+[build.environment]
+  NODE_VERSION = "18"
+
+# Functions (for serverless API handling)
+[functions]
+  directory = "functions"
